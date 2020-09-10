@@ -1,17 +1,23 @@
 package org.dpppt.additionalinfo.backend.ws.model.statistics;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.dpppt.additionalinfo.backend.ws.json.CustomLocalDateSerializer;
+import org.joda.time.LocalDate;
+
 public class History {
 
-    private String date;
+    @JsonSerialize(using = CustomLocalDateSerializer.class)
+    private LocalDate date;
+
     private Integer newInfections;
     private Integer newInfectionsSevenDayAverage;
     private Integer covidcodesEntered;
 
-    public String getDate() {
+    public LocalDate getDate() {
         return date;
     }
 
-    public void setDate(String date) {
+    public void setDate(LocalDate date) {
         this.date = date;
     }
 

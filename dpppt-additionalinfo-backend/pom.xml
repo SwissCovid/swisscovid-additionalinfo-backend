@@ -67,6 +67,13 @@
             <artifactId>jackson-datatype-jsr310</artifactId>
         </dependency>
 
+        <!-- dp3t shared -->
+        <dependency>
+            <groupId>org.dpppt</groupId>
+            <artifactId>dpppt-backend-shared</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+
         <!-- Test dependencies -->
         <dependency>
             <groupId>junit</groupId>
@@ -168,9 +175,9 @@
             </snapshots>
         </repository>
         <repository>
-            <id>github-annotation</id>
-            <name>GitHub OWNER Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/Ubique-OSS/springboot-swagger3-annotations</url>
+            <id>dp3t-shared-backend</id>
+            <name>DP3T Shared Backend</name>
+            <url>https://maven.pkg.github.com/DP-3T/dp3t-shared-backend</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -179,20 +186,6 @@
             </snapshots>
         </repository>
     </repositories>
-
-    <pluginRepositories>
-        <pluginRepository>
-            <id>github</id>
-            <name>GitHub OWNER Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/Ubique-OSS/springboot-swagger3</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </pluginRepository>
-    </pluginRepositories>
 
     <build>
         <finalName>
@@ -222,6 +215,7 @@
                     <target>${java-version}</target>
                 </configuration>
             </plugin>
+
             <!--reproducible builds -->
             <plugin>
                 <groupId>pl.project13.maven</groupId>

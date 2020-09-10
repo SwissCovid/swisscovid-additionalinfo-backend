@@ -27,6 +27,8 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
 import org.dpppt.additionalinfo.backend.ws.controller.DppptAdditionalInfoController;
+import org.dpppt.additionalinfo.backend.ws.splunk.MockSplunkClient;
+import org.dpppt.additionalinfo.backend.ws.splunk.SplunkClient;
 import org.dpppt.backend.shared.interceptor.HeaderInjector;
 import org.dpppt.backend.shared.security.filter.ResponseWrapperFilter;
 import org.slf4j.Logger;
@@ -49,6 +51,8 @@ public abstract class WSBaseConfig implements SchedulingConfigurer, WebMvcConfig
     @Value("${ws.headers.protected:}")
     List<String> protectedHeaders;
 
+    int retentionDays = 0; // TODO remove
+
     @Value(
             "#{${ws.security.headers: {'X-Content-Type-Options':'nosniff', 'X-Frame-Options':'DENY','X-Xss-Protection':'1; mode=block'}}}")
     Map<String, String> additionalHeaders;
@@ -58,8 +62,13 @@ public abstract class WSBaseConfig implements SchedulingConfigurer, WebMvcConfig
     abstract String getPrivateKey();
 
     @Bean
-    public DppptAdditionalInfoController dppptAdditionalInfoController() {
-        return new DppptAdditionalInfoController();
+    public DppptAdditionalInfoController dppptAdditionalInfoController(SplunkClient splunkClient) {
+        return new DppptAdditionalInfoController(splunkClient);
+    }
+
+    @Bean
+    public SplunkClient splunkClient() {
+        return new MockSplunkClient();
     }
 
     @Bean
