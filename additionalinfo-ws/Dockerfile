@@ -22,7 +22,7 @@ RUN mkdir -p /home/ws/bin && \
     mkdir -p /home/ws/tmp
 
 # Copy binary
-COPY ./ws/bin/dpppt-backend-sdk-ws-1.0.0.jar /home/ws/bin/dpppt-backend-sdk-ws.jar
+COPY ./ws/bin/dpppt-additionalinfo-backend.jar /home/ws/bin/dpppt-additionalinfo-backend.jar
 
 RUN chown -R ws:ws /home/ws
 
@@ -30,4 +30,4 @@ USER ws
 # Access to webinterface
 EXPOSE 8080
 
-CMD java -jar $JAVA_OPTS -Dlogging.config=/home/ws/conf/dpppt-backend-sdk-ws-logback.xml -Dspring.config.location=/home/ws/conf/dpppt-backend-sdk-ws.properties /home/ws/bin/dpppt-backend-sdk-ws.jar
+CMD java -jar $JAVA_OPTS -Dlogging.config=/home/ws/conf/dpppt-additionalinfo-backend-logback.xml -Dspring.config.location=/home/ws/conf/dpppt-additionalinfo-backend.properties /home/ws/bin/dpppt-additionalinfo-backend.jar
