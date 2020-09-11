@@ -1,10 +1,10 @@
-package org.dpppt.additionalinfo.backend.ws.splunk;
+package org.dpppt.additionalinfo.backend.ws.statistics;
 
 import org.dpppt.additionalinfo.backend.ws.model.statistics.History;
 import org.dpppt.additionalinfo.backend.ws.model.statistics.Statistics;
 import org.joda.time.LocalDate;
 
-public class MockSplunkClient implements SplunkClient {
+public class MockStatisticClient implements StatisticClient {
     @Override
     public Statistics getStatistics() {
         Statistics statistics = new Statistics();

@@ -12,7 +12,7 @@ package org.dpppt.additionalinfo.backend.ws.controller;
 
 import org.dpppt.additionalinfo.backend.ws.cache.CacheConfig;
 import org.dpppt.additionalinfo.backend.ws.model.statistics.Statistics;
-import org.dpppt.additionalinfo.backend.ws.splunk.SplunkClient;
+import org.dpppt.additionalinfo.backend.ws.statistics.StatisticClient;
 import org.dpppt.backend.shared.util.HeaderUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,10 +30,10 @@ public class DppptAdditionalInfoController {
 
     private static final Logger logger =
             LoggerFactory.getLogger(DppptAdditionalInfoController.class);
-    private final SplunkClient splunkClient;
+    private final StatisticClient statisticClient;
 
-    public DppptAdditionalInfoController(SplunkClient splunkClient) {
-        this.splunkClient = splunkClient;
+    public DppptAdditionalInfoController(StatisticClient statisticClient) {
+        this.statisticClient = statisticClient;
     }
 
     @CrossOrigin(origins = {"https://editor.swagger.io"})
@@ -46,7 +46,7 @@ public class DppptAdditionalInfoController {
     @GetMapping(value = "/statistics")
     public @ResponseBody ResponseEntity<Statistics> getStatistics() {
         return new ResponseEntity<>(
-                splunkClient.getStatistics(),
+                statisticClient.getStatistics(),
                 HeaderUtility.createHeaders(
                         CacheConfig.MAX_AGE_STATISTICS, CacheConfig.NEXT_REFRESH_STATISTICS),
                 HttpStatus.OK);

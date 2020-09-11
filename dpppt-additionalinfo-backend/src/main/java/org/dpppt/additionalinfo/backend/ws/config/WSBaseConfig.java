@@ -27,8 +27,8 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
 import org.dpppt.additionalinfo.backend.ws.controller.DppptAdditionalInfoController;
-import org.dpppt.additionalinfo.backend.ws.splunk.MockSplunkClient;
-import org.dpppt.additionalinfo.backend.ws.splunk.SplunkClient;
+import org.dpppt.additionalinfo.backend.ws.statistics.MockStatisticClient;
+import org.dpppt.additionalinfo.backend.ws.statistics.StatisticClient;
 import org.dpppt.backend.shared.interceptor.HeaderInjector;
 import org.dpppt.backend.shared.security.filter.ResponseWrapperFilter;
 import org.slf4j.Logger;
@@ -62,13 +62,14 @@ public abstract class WSBaseConfig implements SchedulingConfigurer, WebMvcConfig
     abstract String getPrivateKey();
 
     @Bean
-    public DppptAdditionalInfoController dppptAdditionalInfoController(SplunkClient splunkClient) {
-        return new DppptAdditionalInfoController(splunkClient);
+    public DppptAdditionalInfoController dppptAdditionalInfoController(
+            StatisticClient statisticClient) {
+        return new DppptAdditionalInfoController(statisticClient);
     }
 
     @Bean
-    public SplunkClient splunkClient() {
-        return new MockSplunkClient();
+    public StatisticClient statisticsClient() {
+        return new MockStatisticClient();
     }
 
     @Bean
