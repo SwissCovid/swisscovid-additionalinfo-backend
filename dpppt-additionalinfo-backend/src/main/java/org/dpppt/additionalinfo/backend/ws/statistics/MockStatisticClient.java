@@ -10,10 +10,10 @@ public class MockStatisticClient implements StatisticClient {
         Statistics statistics = new Statistics();
         statistics.setTotalActiveUsers(1623942);
         LocalDate today = LocalDate.now();
-        LocalDate dayDate = LocalDate.now().minusDays(7);
-        for (int i = 0; dayDate.isBefore(today.minusDays(1)); i++) {
+        LocalDate dayDate = LocalDate.now().minusDays(21);
+        for (int i = 0; dayDate.isBefore(today); i++) {
             History history = new History();
-            history.setDate(today.minusDays(i));
+            history.setDate(dayDate);
             history.setCovidcodesEntered(50 + i * 2);
             history.setNewInfections((int) (210 + Math.pow(i, 2)));
             history.setNewInfectionsSevenDayAverage((int) (250 + Math.pow(i, 2)));
