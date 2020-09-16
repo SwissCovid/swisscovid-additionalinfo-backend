@@ -2,12 +2,18 @@ package org.dpppt.additionalinfo.backend.ws.statistics;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.X509Certificate;
 
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.ssl.TrustStrategy;
 import org.dpppt.additionalinfo.backend.ws.model.statistics.Statistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,12 +52,20 @@ public class SplunkStatisticClient implements StatisticClient {
 
 		// Setup rest template for making http requests to Splunk. This configures a
 		// custom HTTP client with some good defaults and a custom user agent.
-		PoolingHttpClientConnectionManager manager = new PoolingHttpClientConnectionManager();
-		manager.setDefaultMaxPerRoute(20);
-		manager.setMaxTotal(30);
 		HttpClientBuilder builder = HttpClients.custom().setUserAgent("dp3t-additional-info-backend");
-		builder.setConnectionManager(manager).disableCookieManagement().setDefaultRequestConfig(
+		builder.disableCookieManagement().setDefaultRequestConfig(
 				RequestConfig.custom().setConnectTimeout(CONNECT_TIMEOUT).setSocketTimeout(SOCKET_TIMEOUT).build());
+		try {
+			TrustStrategy acceptingTrustStrategy = (X509Certificate[] chain, String authType) -> true;
+			javax.net.ssl.SSLContext sslContext = org.apache.http.ssl.SSLContexts.custom()
+					.loadTrustMaterial(null, acceptingTrustStrategy).build();
+			SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(sslContext, new NoopHostnameVerifier());
+			builder.setSSLSocketFactory(csf);
+
+		} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
+			logger.warn("Could not seup ssl context.", e);
+		}
+
 		CloseableHttpClient httpClient = builder.build();
 		this.rt = new RestTemplate(new HttpComponentsClientHttpRequestFactory(httpClient));
 	}
@@ -80,8 +94,9 @@ public class SplunkStatisticClient implements StatisticClient {
 		logger.info("Loading active apps");
 		RequestEntity<MultiValueMap<String, String>> request = RequestEntity.post(new URI(url))
 				.accept(MediaType.APPLICATION_JSON).headers(createHeaders()).body(createRequestParams(activeAppsQuery));
+		logger.debug("Request entity: " + request.toString());
 		ResponseEntity<String> result = rt.exchange(request, String.class);
-		logger.info("Result: " + result.getBody());
+		logger.info("Result: Status: " + result.getStatusCode() + " Body: " + result.getBody());
 		logger.info("Active apps loaded");
 	}
 
@@ -90,7 +105,7 @@ public class SplunkStatisticClient implements StatisticClient {
 		params.add("search", query);
 		params.add("earliest_time", "-30d@d");
 		params.add("latest_time", "now");
-		params.add("output_mode", "json");
+		//params.add("output_mode", "json");
 		return params;
 	}
 
