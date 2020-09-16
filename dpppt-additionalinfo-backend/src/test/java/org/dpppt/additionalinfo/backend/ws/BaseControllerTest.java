@@ -32,7 +32,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles({"cloud-dev"})
+@ActiveProfiles({"dev"})
 public abstract class BaseControllerTest {
     @Autowired protected ObjectMapper objectMapper;
     protected MockMvc mockMvc;

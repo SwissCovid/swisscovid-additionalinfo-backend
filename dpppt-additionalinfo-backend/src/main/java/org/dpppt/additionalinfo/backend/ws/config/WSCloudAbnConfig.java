@@ -17,13 +17,20 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
 @Configuration
-@Profile("cloud-test")
-public class WSTestConfig extends WSBaseConfig {
-    @Value("${vcap.services.ecdsa_cs_test.credentials.privateKey}")
+@Profile("cloud-abn")
+public class WSCloudAbnConfig extends WSBaseConfig {
+	
+    @Value("${vcap.services.ecdsa_cs_abn.credentials.privateKey}")
     private String privateKey;
 
-    @Value("${vcap.services.ecdsa_cs_test.credentials.publicKey}")
+    @Value("${vcap.services.ecdsa_cs_abn.credentials.publicKey}")
     public String publicKey;
+    
+    @Value("${vcap.services.splunk_api_abn.credentials.username}")
+    private String splunkUsername;
+    
+    @Value("${vcap.services.splunk_api_abn.credentials.password}")
+    private String splunkPassword;
 
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {}
@@ -37,4 +44,14 @@ public class WSTestConfig extends WSBaseConfig {
     String getPublicKey() {
         return new String(Base64.getDecoder().decode(publicKey));
     }
+    
+	@Override
+	String getSplunkUsername() {
+		return splunkUsername;
+	}
+
+	@Override
+	String getSplunkpassword() {
+		return splunkPassword;
+	}
 }

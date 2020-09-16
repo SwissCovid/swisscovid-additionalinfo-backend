@@ -18,13 +18,20 @@ import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
 @Configuration
 @Profile("cloud-prod")
-public class WSProdConfig extends WSBaseConfig {
+public class WSCloudProdConfig extends WSBaseConfig {
+	
     @Value("${vcap.services.ecdsa_cs_prod.credentials.privateKey}")
     private String privateKey;
 
     @Value("${vcap.services.ecdsa_cs_prod.credentials.publicKey}")
     public String publicKey;
 
+    @Value("${vcap.services.splunk_api_prod.credentials.username}")
+    private String splunkUsername;
+    
+    @Value("${vcap.services.splunk_api_prod.credentials.password}")
+    private String splunkPassword;
+    
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {}
 
@@ -37,4 +44,14 @@ public class WSProdConfig extends WSBaseConfig {
     String getPublicKey() {
         return new String(Base64.getDecoder().decode(publicKey));
     }
+    
+	@Override
+	String getSplunkUsername() {
+		return splunkUsername;
+	}
+
+	@Override
+	String getSplunkpassword() {
+		return splunkPassword;
+	}
 }
