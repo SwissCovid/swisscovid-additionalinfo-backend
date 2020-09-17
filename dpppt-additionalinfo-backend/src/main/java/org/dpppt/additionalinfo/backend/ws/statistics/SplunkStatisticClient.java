@@ -79,7 +79,8 @@ public class SplunkStatisticClient implements StatisticClient {
 
 		try {
 			loadActiveApps(result);
-
+			loadUsedAuthCodeCount(result);
+			loadPositiveTestCount(result);
 		} catch (Exception e) {
 			logger.error("Could not load statistics from Splunk: " + e);
 			throw new RuntimeException(e);
@@ -90,7 +91,7 @@ public class SplunkStatisticClient implements StatisticClient {
 		return result;
 	}
 
-	private void loadActiveApps(Object statistics) throws URISyntaxException {
+	private void loadActiveApps(Statistics statistics) throws URISyntaxException {
 		logger.info("Loading active apps");
 		RequestEntity<MultiValueMap<String, String>> request = RequestEntity.post(new URI(url))
 				.accept(MediaType.APPLICATION_JSON).headers(createHeaders()).body(createRequestParams(activeAppsQuery));
@@ -100,12 +101,34 @@ public class SplunkStatisticClient implements StatisticClient {
 		logger.info("Active apps loaded");
 	}
 
+	private void loadUsedAuthCodeCount(Statistics statistics) throws URISyntaxException {
+		logger.info("Loading used auth code count");
+		RequestEntity<MultiValueMap<String, String>> request = RequestEntity.post(new URI(url))
+				.accept(MediaType.APPLICATION_JSON).headers(createHeaders())
+				.body(createRequestParams(usedAuthCodeCountQuery));
+		logger.debug("Request entity: " + request.toString());
+		ResponseEntity<String> result = rt.exchange(request, String.class);
+		logger.info("Result: Status: " + result.getStatusCode() + " Body: " + result.getBody());
+		logger.info("Used auth code count loaded");
+	}
+
+	private void loadPositiveTestCount(Statistics statistics) throws URISyntaxException {
+		logger.info("Loading positive test count");
+		RequestEntity<MultiValueMap<String, String>> request = RequestEntity.post(new URI(url))
+				.accept(MediaType.APPLICATION_JSON).headers(createHeaders())
+				.body(createRequestParams(positiveTestCountQuery));
+		logger.debug("Request entity: " + request.toString());
+		ResponseEntity<String> result = rt.exchange(request, String.class);
+		logger.info("Result: Status: " + result.getStatusCode() + " Body: " + result.getBody());
+		logger.info("Positive test count loaded");
+	}
+
 	private MultiValueMap<String, String> createRequestParams(String query) {
 		MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
 		params.add("search", query);
 		params.add("earliest_time", "-30d@d");
 		params.add("latest_time", "now");
-		//params.add("output_mode", "json");
+		params.add("output_mode", "json");
 		return params;
 	}
 
