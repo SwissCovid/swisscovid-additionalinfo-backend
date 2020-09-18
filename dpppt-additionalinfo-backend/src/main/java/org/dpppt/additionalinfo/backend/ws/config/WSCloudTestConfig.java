@@ -26,10 +26,10 @@ public class WSCloudTestConfig extends WSBaseConfig {
 	@Value("${vcap.services.ecdsa_cs_test.credentials.publicKey}")
 	public String publicKey;
 
-	@Value("${vcap.services.splunk_api_prod.credentials.username}")
+	@Value("${vcap.services.splunk_api_test.credentials.username}")
 	private String splunkUsername;
 
-	@Value("${vcap.services.splunk_api_prod.credentials.password}")
+	@Value("${vcap.services.splunk_api_test.credentials.password}")
 	private String splunkPassword;
 
 	@Override
