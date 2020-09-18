@@ -1,10 +1,10 @@
 package org.dpppt.additionalinfo.backend.ws.model.statistics;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.dpppt.additionalinfo.backend.ws.json.CustomLocalDateSerializer;
-import org.joda.time.LocalDate;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 

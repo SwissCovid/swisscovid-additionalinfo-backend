@@ -1,8 +1,9 @@
 package org.dpppt.additionalinfo.backend.ws.statistics;
 
+import java.time.LocalDate;
+
 import org.dpppt.additionalinfo.backend.ws.model.statistics.History;
 import org.dpppt.additionalinfo.backend.ws.model.statistics.Statistics;
-import org.joda.time.LocalDate;
 
 public class MockStatisticClient implements StatisticClient {
 	@Override
@@ -17,11 +18,24 @@ public class MockStatisticClient implements StatisticClient {
 			history.setDate(dayDate);
 			history.setCovidcodesEntered(50 + i * 2);
 			history.setNewInfections((int) (210 + Math.pow(i, 2)));
-			history.setNewInfectionsSevenDayAverage((int) (250 + Math.pow(i, 2)));
+			//history.setNewInfectionsSevenDayAverage((int) (250 + Math.pow(i, 2)));
 			statistics.getHistory().add(history);
 
 			dayDate = dayDate.plusDays(1);
 		}
+		
+		int window = 7;
+		for (int i = 3; i < statistics.getHistory().size() - 3; i++) {
+			int sumInWindow = 0;
+			for (int j = 0; j < window; j++) {
+				Integer newInfectionsForDay = statistics.getHistory().get(i - 3 + j).getNewInfections();
+				if (newInfectionsForDay != null) {
+					sumInWindow += newInfectionsForDay;
+				}
+			}
+			statistics.getHistory().get(i).setNewInfectionsSevenDayAverage(sumInWindow / window);
+		}
+		
 		return statistics;
 	}
 }

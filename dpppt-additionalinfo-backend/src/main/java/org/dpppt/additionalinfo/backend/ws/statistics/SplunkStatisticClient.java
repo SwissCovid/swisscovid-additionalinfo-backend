@@ -1,11 +1,16 @@
 package org.dpppt.additionalinfo.backend.ws.statistics;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Scanner;
 
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
@@ -14,10 +19,12 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.TrustStrategy;
+import org.dpppt.additionalinfo.backend.ws.model.statistics.History;
 import org.dpppt.additionalinfo.backend.ws.model.statistics.Statistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +32,10 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class SplunkStatisticClient implements StatisticClient {
 
@@ -76,6 +87,9 @@ public class SplunkStatisticClient implements StatisticClient {
 		logger.info("Loading statistics from Splunk: " + this.url);
 
 		Statistics result = new Statistics();
+		LocalDate today = LocalDate.now();
+		result.setLastUpdated(today);
+		fillDays(today, result);
 
 		try {
 			loadActiveApps(result);
@@ -91,35 +105,85 @@ public class SplunkStatisticClient implements StatisticClient {
 		return result;
 	}
 
-	private void loadActiveApps(Statistics statistics) throws URISyntaxException {
+	private void fillDays(LocalDate today, Statistics statistics) {
+		LocalDate dayDate = LocalDate.now().minusDays(30);
+		logger.info("Setup statistics result history. Start: " + dayDate + " End: " + today.minusDays(1));
+		while (dayDate.isBefore(today)) {
+			History history = new History();
+			history.setDate(dayDate);
+			statistics.getHistory().add(history);
+			dayDate = dayDate.plusDays(1);
+		}
+	}
+
+	private void loadActiveApps(Statistics statistics) throws Exception {
 		logger.info("Loading active apps");
 		RequestEntity<MultiValueMap<String, String>> request = RequestEntity.post(new URI(url))
 				.accept(MediaType.APPLICATION_JSON).headers(createHeaders()).body(createRequestParams(activeAppsQuery));
 		logger.debug("Request entity: " + request.toString());
-		ResponseEntity<String> result = rt.exchange(request, String.class);
-		logger.info("Result: Status: " + result.getStatusCode() + " Body: " + result.getBody());
+		ResponseEntity<String> response = rt.exchange(request, String.class);
+		logger.info("Result: Status: " + response.getStatusCode() + " Body: " + response.getBody());
+		if (response.getStatusCode() == HttpStatus.OK) {
+			List<SplunkResult> resultList = extractResultFromSplunkApiString(response.getBody());
+			if (!resultList.isEmpty()) {
+				// get latest result, this is the first element in the list
+				statistics.setTotalActiveUsers(resultList.get(0).getActiveApps());
+			}
+		}
 		logger.info("Active apps loaded");
 	}
 
-	private void loadUsedAuthCodeCount(Statistics statistics) throws URISyntaxException {
+	private void loadUsedAuthCodeCount(Statistics statistics) throws Exception {
 		logger.info("Loading used auth code count");
 		RequestEntity<MultiValueMap<String, String>> request = RequestEntity.post(new URI(url))
 				.accept(MediaType.APPLICATION_JSON).headers(createHeaders())
 				.body(createRequestParams(usedAuthCodeCountQuery));
 		logger.debug("Request entity: " + request.toString());
-		ResponseEntity<String> result = rt.exchange(request, String.class);
-		logger.info("Result: Status: " + result.getStatusCode() + " Body: " + result.getBody());
+		ResponseEntity<String> response = rt.exchange(request, String.class);
+		logger.info("Result: Status: " + response.getStatusCode() + " Body: " + response.getBody());
+		if (response.getStatusCode() == HttpStatus.OK) {
+			List<SplunkResult> resultList = extractResultFromSplunkApiString(response.getBody());
+			for (SplunkResult r : resultList) {
+				for (History h : statistics.getHistory()) {
+					if (h.getDate().isEqual(r.getTime().toLocalDate())) {
+						h.setCovidcodesEntered(r.getUsedAuthorizationCodesCount());
+					}
+				}
+			}
+		}
 		logger.info("Used auth code count loaded");
 	}
 
-	private void loadPositiveTestCount(Statistics statistics) throws URISyntaxException {
+	private void loadPositiveTestCount(Statistics statistics) throws Exception {
 		logger.info("Loading positive test count");
 		RequestEntity<MultiValueMap<String, String>> request = RequestEntity.post(new URI(url))
 				.accept(MediaType.APPLICATION_JSON).headers(createHeaders())
 				.body(createRequestParams(positiveTestCountQuery));
 		logger.debug("Request entity: " + request.toString());
-		ResponseEntity<String> result = rt.exchange(request, String.class);
-		logger.info("Result: Status: " + result.getStatusCode() + " Body: " + result.getBody());
+		ResponseEntity<String> response = rt.exchange(request, String.class);
+		logger.info("Result: Status: " + response.getStatusCode() + " Body: " + response.getBody());
+		if (response.getStatusCode() == HttpStatus.OK) {
+			List<SplunkResult> resultList = extractResultFromSplunkApiString(response.getBody());
+			for (SplunkResult r : resultList) {
+				for (History h : statistics.getHistory()) {
+					if (h.getDate().isEqual(r.getTime().toLocalDate())) {
+						h.setNewInfections(r.getPositiveTestCount());
+					}
+				}
+			}
+		}
+		// compute 7 day average
+		int window = 7;
+		for (int i = 3; i < statistics.getHistory().size() - 3; i++) {
+			int sumInWindow = 0;
+			for (int j = 0; j < window; j++) {
+				Integer newInfectionsForDay = statistics.getHistory().get(i - 3 + j).getNewInfections();
+				if (newInfectionsForDay != null) {
+					sumInWindow += newInfectionsForDay;
+				}
+			}
+			statistics.getHistory().get(i).setNewInfectionsSevenDayAverage(sumInWindow / window);
+		}
 		logger.info("Positive test count loaded");
 	}
 
@@ -136,5 +200,28 @@ public class SplunkStatisticClient implements StatisticClient {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setBasicAuth(username, password);
 		return headers;
+	}
+
+	/**
+	 * Reads the response from the splunk api (not fully valid json, but single json
+	 * objects, line by line) and returns a list of {@link SplunkResult} in
+	 * descending order by time.
+	 * 
+	 * @param splunkApiResponse
+	 * @return
+	 * @throws JsonMappingException
+	 * @throws JsonProcessingException
+	 */
+	private List<SplunkResult> extractResultFromSplunkApiString(String splunkApiResponse)
+			throws JsonMappingException, JsonProcessingException {
+		ObjectMapper om = new ObjectMapper();
+		List<SplunkResult> result = new ArrayList<>();
+		String[] lines = splunkApiResponse.split("\\n");
+		for (String line : lines) {
+			SplunkResponse response = om.readValue(line, SplunkResponse.class);
+			result.add(response.getResult());
+		}
+		Collections.sort(result, Collections.reverseOrder(Comparator.comparing(SplunkResult::getTime)));
+		return result;
 	}
 }
