@@ -11,7 +11,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.Scanner;
 
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
@@ -46,7 +45,7 @@ public class SplunkStatisticClient implements StatisticClient {
 	private final String activeAppsQuery;
 	private final String usedAuthCodeCountQuery;
 	private final String positiveTestCountQuery;
-	private final String queryDaysBack;
+	private final Integer queryDaysBack;
 	private final RestTemplate rt;
 
 	private static final int CONNECT_TIMEOUT = 30_000;
@@ -55,7 +54,7 @@ public class SplunkStatisticClient implements StatisticClient {
 	private static final Logger logger = LoggerFactory.getLogger(SplunkStatisticClient.class);
 
 	public SplunkStatisticClient(String splunkUrl, String splunkUsername, String splunkpassword, String activeAppsQuery,
-			String usedAuthCodeCountQuery, String positiveTestCountQuery, String queryDaysBack) {
+			String usedAuthCodeCountQuery, String positiveTestCountQuery, Integer queryDaysBack) {
 		this.url = splunkUrl;
 		this.username = splunkUsername;
 		this.password = splunkpassword;
@@ -109,7 +108,7 @@ public class SplunkStatisticClient implements StatisticClient {
 	}
 
 	private void fillDays(LocalDate today, Statistics statistics) {
-		LocalDate dayDate = LocalDate.now().minusDays(30);
+		LocalDate dayDate = LocalDate.now().minusDays(queryDaysBack);
 		logger.info("Setup statistics result history. Start: " + dayDate + " End: " + today.minusDays(1));
 		while (dayDate.isBefore(today)) {
 			History history = new History();
@@ -189,7 +188,7 @@ public class SplunkStatisticClient implements StatisticClient {
 	private MultiValueMap<String, String> createRequestParams(String query) {
 		MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
 		params.add("search", query);
-		params.add("earliest_time", queryDaysBack);
+		params.add("earliest_time", "-" + queryDaysBack + "d@d");
 		params.add("latest_time", "now");
 		params.add("output_mode", "json");
 		return params;

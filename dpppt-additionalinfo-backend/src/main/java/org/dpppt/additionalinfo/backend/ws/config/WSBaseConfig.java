@@ -71,8 +71,8 @@ public abstract class WSBaseConfig implements WebMvcConfigurer {
 	@Value("${ws.statistics.splunk.positivetestcount.query:}")
 	String positiveTestCountQuery;
 
-	@Value("${ws.statistics.splunk.daysback:-60d@d}")
-	String queryDaysBack;
+	@Value("${ws.statistics.splunk.daysback: 60}")
+	Integer queryDaysBack;
 
 	@Value("${ws.statistics.cachecontrol:PT1H}")
 	Duration cacheControl;
