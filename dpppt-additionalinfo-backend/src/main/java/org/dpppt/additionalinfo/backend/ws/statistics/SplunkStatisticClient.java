@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 
 import org.apache.http.client.config.RequestConfig;
@@ -128,8 +129,14 @@ public class SplunkStatisticClient implements StatisticClient {
 		if (response.getStatusCode() == HttpStatus.OK) {
 			List<SplunkResult> resultList = extractResultFromSplunkApiString(response.getBody());
 			if (!resultList.isEmpty()) {
-				// get latest result, this is the first element in the list
-				statistics.setTotalActiveUsers(resultList.get(0).getActiveApps());
+				// get latest result
+				Optional<SplunkResult> latestCount = resultList.stream().filter(r -> r.getActiveApps() != null)
+						.findFirst();
+				if (latestCount.isPresent()) {
+					statistics.setTotalActiveUsers(latestCount.get().getActiveApps());
+				} else {
+					statistics.setTotalActiveUsers(null);
+				}
 			}
 		}
 		logger.info("Active apps loaded");
@@ -174,18 +181,8 @@ public class SplunkStatisticClient implements StatisticClient {
 				}
 			}
 		}
-		// compute 7 day average
-		int window = 7;
-		for (int i = 3; i < statistics.getHistory().size() - 3; i++) {
-			int sumInWindow = 0;
-			for (int j = 0; j < window; j++) {
-				Integer newInfectionsForDay = statistics.getHistory().get(i - 3 + j).getNewInfections();
-				if (newInfectionsForDay != null) {
-					sumInWindow += newInfectionsForDay;
-				}
-			}
-			statistics.getHistory().get(i).setNewInfectionsSevenDayAverage(sumInWindow / window);
-		}
+		StatisticHelper.calculateRollingAverage(statistics);
+
 		logger.info("Positive test count loaded");
 	}
 
@@ -216,9 +213,10 @@ public class SplunkStatisticClient implements StatisticClient {
 	 */
 	private List<SplunkResult> extractResultFromSplunkApiString(String splunkApiResponse)
 			throws JsonMappingException, JsonProcessingException {
+		String sanitizedSplunkApiStrint = splunkApiResponse.replaceAll("\"NO_DATA\"", "null");
 		ObjectMapper om = new ObjectMapper();
 		List<SplunkResult> result = new ArrayList<>();
-		String[] lines = splunkApiResponse.split("\\n");
+		String[] lines = sanitizedSplunkApiStrint.split("\\n");
 		for (String line : lines) {
 			SplunkResponse response = om.readValue(line, SplunkResponse.class);
 			result.add(response.getResult());
