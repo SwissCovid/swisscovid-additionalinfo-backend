@@ -10,7 +10,6 @@
 
 package org.dpppt.additionalinfo.backend.ws.config;
 
-import io.jsonwebtoken.SignatureAlgorithm;
 import java.io.ByteArrayInputStream;
 import java.io.Reader;
 import java.io.StringReader;
@@ -21,8 +20,10 @@ import java.security.PublicKey;
 import java.security.Security;
 import java.security.cert.CertificateFactory;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
@@ -39,14 +40,13 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import io.jsonwebtoken.SignatureAlgorithm;
+
 @Configuration
-@EnableScheduling
-public abstract class WSBaseConfig implements SchedulingConfigurer, WebMvcConfigurer {
+public abstract class WSBaseConfig implements WebMvcConfigurer {
 
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
 	final SignatureAlgorithm algorithm = SignatureAlgorithm.ES256;
@@ -71,6 +71,12 @@ public abstract class WSBaseConfig implements SchedulingConfigurer, WebMvcConfig
 	@Value("${ws.statistics.splunk.positivetestcount.query:}")
 	String positiveTestCountQuery;
 
+	@Value("${ws.statistics.splunk.daysback:-60d@d}")
+	String queryDaysBack;
+
+	@Value("${ws.statistics.cachecontrol:PT1H}")
+	Duration cacheControl;
+
 	abstract String getPublicKey();
 
 	abstract String getPrivateKey();
@@ -85,7 +91,7 @@ public abstract class WSBaseConfig implements SchedulingConfigurer, WebMvcConfig
 	public SplunkStatisticClient splunkStatisticsClient() {
 		logger.info("Creating Splunk statistics client");
 		return new SplunkStatisticClient(splunkUrl, getSplunkUsername(), getSplunkpassword(), activeAppsQuery,
-				usedAuthCodeCountQuery, positiveTestCountQuery);
+				usedAuthCodeCountQuery, positiveTestCountQuery, queryDaysBack);
 	}
 
 	@Bean
@@ -97,7 +103,7 @@ public abstract class WSBaseConfig implements SchedulingConfigurer, WebMvcConfig
 
 	@Bean
 	public DppptAdditionalInfoController dppptAdditionalInfoController(StatisticClient statisticClient) {
-		return new DppptAdditionalInfoController(statisticClient);
+		return new DppptAdditionalInfoController(statisticClient, cacheControl);
 	}
 
 	@Bean

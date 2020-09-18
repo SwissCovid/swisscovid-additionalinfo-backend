@@ -10,14 +10,13 @@
 
 package org.dpppt.additionalinfo.backend.ws.controller;
 
-import org.dpppt.additionalinfo.backend.ws.cache.CacheConfig;
+import java.time.Duration;
+
 import org.dpppt.additionalinfo.backend.ws.model.statistics.Statistics;
-import org.dpppt.additionalinfo.backend.ws.statistics.MockStatisticClient;
 import org.dpppt.additionalinfo.backend.ws.statistics.StatisticClient;
-import org.dpppt.backend.shared.util.HeaderUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -30,10 +29,16 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class DppptAdditionalInfoController {
 
 	private static final Logger logger = LoggerFactory.getLogger(DppptAdditionalInfoController.class);
-	private final StatisticClient statisticClient;
 
-	public DppptAdditionalInfoController(StatisticClient statisticClient) {
+	private final StatisticClient statisticClient;
+	private final Duration cacheControl;
+
+	private Statistics currentStatistics = new Statistics();
+
+	public DppptAdditionalInfoController(StatisticClient statisticClient, Duration cachControl) {
 		this.statisticClient = statisticClient;
+		this.cacheControl = cachControl;
+		reloadStats();
 	}
 
 	@CrossOrigin(origins = { "https://editor.swagger.io" })
@@ -45,19 +50,17 @@ public class DppptAdditionalInfoController {
 	@CrossOrigin(origins = { "https://editor.swagger.io" })
 	@GetMapping(value = "/statistics")
 	public @ResponseBody ResponseEntity<Statistics> getStatistics() {
-		Statistics result = null;
+		return ResponseEntity.ok().cacheControl(CacheControl.maxAge(cacheControl)).body(currentStatistics);
+	}
 
+	public void reloadStats() {
+		logger.info("Refresh statistics");
 		try {
-			result = statisticClient.getStatistics();
+			Statistics newStatistics = statisticClient.getStatistics();
+			currentStatistics = newStatistics;
+			logger.info("Successfully refreshed statistics");
 		} catch (Exception e) {
+			logger.error("Could not load statistics: ", e);
 		}
-
-		if (result == null || result.getTotalActiveUsers() == null) {
-			result = new MockStatisticClient().getStatistics();
-		}
-
-		return new ResponseEntity<>(result,
-				HeaderUtility.createHeaders(CacheConfig.MAX_AGE_STATISTICS, CacheConfig.NEXT_REFRESH_STATISTICS),
-				HttpStatus.OK);
 	}
 }

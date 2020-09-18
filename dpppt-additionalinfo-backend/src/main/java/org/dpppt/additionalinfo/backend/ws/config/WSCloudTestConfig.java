@@ -11,10 +11,10 @@
 package org.dpppt.additionalinfo.backend.ws.config;
 
 import java.util.Base64;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
 @Configuration
 @Profile("cloud-test")
@@ -31,10 +31,6 @@ public class WSCloudTestConfig extends WSBaseConfig {
 
 	@Value("${vcap.services.splunk_api_test.credentials.password}")
 	private String splunkPassword;
-
-	@Override
-	public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
-	}
 
 	@Override
 	String getPrivateKey() {

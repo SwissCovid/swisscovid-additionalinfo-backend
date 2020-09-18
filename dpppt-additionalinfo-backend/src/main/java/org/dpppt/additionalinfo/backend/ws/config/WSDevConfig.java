@@ -11,10 +11,10 @@
 package org.dpppt.additionalinfo.backend.ws.config;
 
 import java.util.Base64;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
 @Configuration
 @Profile("dev")
@@ -25,10 +25,6 @@ public class WSDevConfig extends WSBaseConfig {
 
 	@Value("${ws.ecdsa.credentials.publicKey:}")
 	public String publicKey;
-
-	@Override
-	public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
-	}
 
 	@Override
 	String getPrivateKey() {

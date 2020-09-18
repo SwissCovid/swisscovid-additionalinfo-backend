@@ -45,6 +45,7 @@ public class SplunkStatisticClient implements StatisticClient {
 	private final String activeAppsQuery;
 	private final String usedAuthCodeCountQuery;
 	private final String positiveTestCountQuery;
+	private final String queryDaysBack;
 	private final RestTemplate rt;
 
 	private static final int CONNECT_TIMEOUT = 30_000;
@@ -53,13 +54,14 @@ public class SplunkStatisticClient implements StatisticClient {
 	private static final Logger logger = LoggerFactory.getLogger(SplunkStatisticClient.class);
 
 	public SplunkStatisticClient(String splunkUrl, String splunkUsername, String splunkpassword, String activeAppsQuery,
-			String usedAuthCodeCountQuery, String positiveTestCountQuery) {
+			String usedAuthCodeCountQuery, String positiveTestCountQuery, String queryDaysBack) {
 		this.url = splunkUrl;
 		this.username = splunkUsername;
 		this.password = splunkpassword;
 		this.activeAppsQuery = activeAppsQuery;
 		this.usedAuthCodeCountQuery = usedAuthCodeCountQuery;
 		this.positiveTestCountQuery = positiveTestCountQuery;
+		this.queryDaysBack = queryDaysBack;
 
 		// Setup rest template for making http requests to Splunk. This configures a
 		// custom HTTP client with some good defaults and a custom user agent.
@@ -190,7 +192,7 @@ public class SplunkStatisticClient implements StatisticClient {
 	private MultiValueMap<String, String> createRequestParams(String query) {
 		MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
 		params.add("search", query);
-		params.add("earliest_time", "-30d@d");
+		params.add("earliest_time", queryDaysBack);
 		params.add("latest_time", "now");
 		params.add("output_mode", "json");
 		return params;
