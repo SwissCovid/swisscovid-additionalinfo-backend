@@ -54,7 +54,8 @@ public abstract class WSBaseConfig implements WebMvcConfigurer {
 	@Value("${ws.headers.protected:}")
 	List<String> protectedHeaders;
 
-	int retentionDays = 0; // TODO remove
+	// used for jwt token validity
+	int retentionDays = 1;
 
 	@Value("#{${ws.security.headers: {'X-Content-Type-Options':'nosniff', 'X-Frame-Options':'DENY','X-Xss-Protection':'1; mode=block'}}}")
 	Map<String, String> additionalHeaders;
@@ -71,8 +72,11 @@ public abstract class WSBaseConfig implements WebMvcConfigurer {
 	@Value("${ws.statistics.splunk.positivetestcount.query:}")
 	String positiveTestCountQuery;
 
-	@Value("${ws.statistics.splunk.daysback: 60}")
-	Integer queryDaysBack;
+	@Value("${ws.statistics.splunk.startdaysback: 60}")
+	Integer queryStartDaysBack;
+	
+	@Value("${ws.statistics.splunk.enddaysback: 3}")
+	Integer queryEndDaysBack;
 
 	@Value("${ws.statistics.cachecontrol:PT1H}")
 	Duration cacheControl;
@@ -91,7 +95,7 @@ public abstract class WSBaseConfig implements WebMvcConfigurer {
 	public SplunkStatisticClient splunkStatisticsClient() {
 		logger.info("Creating Splunk statistics client");
 		return new SplunkStatisticClient(splunkUrl, getSplunkUsername(), getSplunkpassword(), activeAppsQuery,
-				usedAuthCodeCountQuery, positiveTestCountQuery, queryDaysBack);
+				usedAuthCodeCountQuery, positiveTestCountQuery, queryStartDaysBack, queryEndDaysBack);
 	}
 
 	@Bean
