@@ -6,6 +6,8 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.time.LocalDate;
+import java.time.Period;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -45,7 +47,7 @@ public class SplunkStatisticClient implements StatisticClient {
 	private final String activeAppsQuery;
 	private final String usedAuthCodeCountQuery;
 	private final String positiveTestCountQuery;
-	private final Integer queryStartDaysBack;
+	private final LocalDate queryStartDate;
 	private final Integer queryEndDaysBack;
 
 	private final RestTemplate rt;
@@ -56,14 +58,15 @@ public class SplunkStatisticClient implements StatisticClient {
 	private static final Logger logger = LoggerFactory.getLogger(SplunkStatisticClient.class);
 
 	public SplunkStatisticClient(String splunkUrl, String splunkUsername, String splunkpassword, String activeAppsQuery,
-			String usedAuthCodeCountQuery, String positiveTestCountQuery, Integer queryStartDaysBack, Integer queryEndDaysBack) {
+			String usedAuthCodeCountQuery, String positiveTestCountQuery, LocalDate queryStartDate,
+			Integer queryEndDaysBack) {
 		this.url = splunkUrl;
 		this.username = splunkUsername;
 		this.password = splunkpassword;
 		this.activeAppsQuery = activeAppsQuery;
 		this.usedAuthCodeCountQuery = usedAuthCodeCountQuery;
 		this.positiveTestCountQuery = positiveTestCountQuery;
-		this.queryStartDaysBack = queryStartDaysBack;
+		this.queryStartDate = queryStartDate;
 		this.queryEndDaysBack = queryEndDaysBack;
 
 		// Setup rest template for making http requests to Splunk. This configures a
@@ -111,7 +114,7 @@ public class SplunkStatisticClient implements StatisticClient {
 	}
 
 	private void fillDays(LocalDate today, Statistics statistics) {
-		LocalDate dayDate = LocalDate.now().minusDays(queryStartDaysBack);
+		LocalDate dayDate = queryStartDate;
 		LocalDate endDate = today.minusDays(queryEndDaysBack);
 		logger.info("Setup statistics result history. Start: " + dayDate + " End: " + endDate);
 		while (dayDate.isBefore(endDate)) {
@@ -125,7 +128,8 @@ public class SplunkStatisticClient implements StatisticClient {
 	private void loadActiveApps(Statistics statistics) throws Exception {
 		logger.info("Loading active apps");
 		RequestEntity<MultiValueMap<String, String>> request = RequestEntity.post(new URI(url))
-				.accept(MediaType.APPLICATION_JSON).headers(createHeaders()).body(createRequestParams(activeAppsQuery));
+				.accept(MediaType.APPLICATION_JSON).headers(createHeaders())
+				.body(createRequestParamsForActiveApps(activeAppsQuery));
 		logger.debug("Request entity: " + request.toString());
 		ResponseEntity<String> response = rt.exchange(request, String.class);
 		logger.info("Result: Status: " + response.getStatusCode() + " Body: " + response.getBody());
@@ -192,8 +196,26 @@ public class SplunkStatisticClient implements StatisticClient {
 	private MultiValueMap<String, String> createRequestParams(String query) {
 		MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
 		params.add("search", query);
-		params.add("earliest_time", "-" + queryStartDaysBack + "d@d");
+		long daysBack = ChronoUnit.DAYS.between(queryStartDate, LocalDate.now());
+		params.add("earliest_time", "-" + daysBack + "d@d");
 		params.add("latest_time", "-" + queryEndDaysBack + "d@d");
+		params.add("output_mode", "json");
+		return params;
+	}
+
+	/**
+	 * For the active apps, we always get the last 10 days, as we just need the most
+	 * current value and no history.
+	 * 
+	 * @param query
+	 * @return
+	 */
+	private MultiValueMap<String, String> createRequestParamsForActiveApps(String query) {
+		MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+		params.add("search", query);
+		int daysBack = 10;
+		params.add("earliest_time", "-" + daysBack + "d@d");
+		params.add("latest_time", "now");
 		params.add("output_mode", "json");
 		return params;
 	}
