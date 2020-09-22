@@ -20,9 +20,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 class TestSplunkResponse {
 
 	@Test
-	//@Ignore("for local testing")
+	@Ignore("for local testing")
 	void testResponseParsing() throws IOException {
-		String jsonString = Files.readString(Paths.get("/home/alig/work/local/swisscovid/active_apps.json"));
+		String jsonString = Files.readString(Paths.get(""));
 		List<SplunkResult> resultList = extractResultFromSplunkApiString(jsonString);
 	}
 

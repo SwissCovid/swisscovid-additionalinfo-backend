@@ -21,6 +21,7 @@ import java.security.Security;
 import java.security.cert.CertificateFactory;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -72,10 +73,10 @@ public abstract class WSBaseConfig implements WebMvcConfigurer {
 	@Value("${ws.statistics.splunk.positivetestcount.query:}")
 	String positiveTestCountQuery;
 
-	@Value("${ws.statistics.splunk.startdaysback: 60}")
-	Integer queryStartDaysBack;
+    @Value("#{T(java.time.LocalDate).parse('${ws.statistics.splunk.startdate:2020-06-01}')}")
+	LocalDate queryStartDate;
 	
-	@Value("${ws.statistics.splunk.enddaysback: 3}")
+	@Value("${ws.statistics.splunk.enddaysback:0}")
 	Integer queryEndDaysBack;
 
 	@Value("${ws.statistics.cachecontrol:PT1H}")
@@ -95,7 +96,7 @@ public abstract class WSBaseConfig implements WebMvcConfigurer {
 	public SplunkStatisticClient splunkStatisticsClient() {
 		logger.info("Creating Splunk statistics client");
 		return new SplunkStatisticClient(splunkUrl, getSplunkUsername(), getSplunkpassword(), activeAppsQuery,
-				usedAuthCodeCountQuery, positiveTestCountQuery, queryStartDaysBack, queryEndDaysBack);
+				usedAuthCodeCountQuery, positiveTestCountQuery, queryStartDate, queryEndDaysBack);
 	}
 
 	@Bean
