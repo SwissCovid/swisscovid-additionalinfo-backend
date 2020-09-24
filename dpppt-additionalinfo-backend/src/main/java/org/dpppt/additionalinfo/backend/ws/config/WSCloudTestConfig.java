@@ -17,14 +17,20 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 @Configuration
-@Profile("dev")
-public class WSDevConfig extends WSBaseConfig {
-
-	@Value("${ws.ecdsa.credentials.privateKey:}")
+@Profile("cloud-test")
+public class WSCloudTestConfig extends WSBaseConfig {
+	
+	@Value("${vcap.services.ecdsa_cs_test.credentials.privateKey}")
 	private String privateKey;
 
-	@Value("${ws.ecdsa.credentials.publicKey:}")
+	@Value("${vcap.services.ecdsa_cs_test.credentials.publicKey}")
 	public String publicKey;
+
+	@Value("${vcap.services.splunk_api_test.credentials.username}")
+	private String splunkUsername;
+
+	@Value("${vcap.services.splunk_api_test.credentials.password}")
+	private String splunkPassword;
 
 	@Override
 	String getPrivateKey() {
@@ -38,11 +44,11 @@ public class WSDevConfig extends WSBaseConfig {
 
 	@Override
 	String getSplunkUsername() {
-		throw new IllegalStateException("No splunk configuration in dev profile");
+		return splunkUsername;
 	}
 
 	@Override
 	String getSplunkpassword() {
-		throw new IllegalStateException("No splunk configuration in dev profile");
+		return splunkPassword;
 	}
 }
