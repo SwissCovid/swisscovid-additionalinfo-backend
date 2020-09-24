@@ -10,13 +10,13 @@
 
 package org.dpppt.additionalinfo.backend.ws.controller;
 
-import org.dpppt.additionalinfo.backend.ws.cache.CacheConfig;
+import java.time.Duration;
+
 import org.dpppt.additionalinfo.backend.ws.model.statistics.Statistics;
-import org.dpppt.additionalinfo.backend.ws.splunk.SplunkClient;
-import org.dpppt.backend.shared.util.HeaderUtility;
+import org.dpppt.additionalinfo.backend.ws.statistics.StatisticClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -28,27 +28,39 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @RequestMapping("/v1")
 public class DppptAdditionalInfoController {
 
-    private static final Logger logger =
-            LoggerFactory.getLogger(DppptAdditionalInfoController.class);
-    private final SplunkClient splunkClient;
+	private static final Logger logger = LoggerFactory.getLogger(DppptAdditionalInfoController.class);
 
-    public DppptAdditionalInfoController(SplunkClient splunkClient) {
-        this.splunkClient = splunkClient;
-    }
+	private final StatisticClient statisticClient;
+	private final Duration cacheControl;
 
-    @CrossOrigin(origins = {"https://editor.swagger.io"})
-    @GetMapping(value = "")
-    public @ResponseBody String hello() {
-        return "Hello from DP3T Additional Info WS";
-    }
+	private Statistics currentStatistics = new Statistics();
 
-    @CrossOrigin(origins = {"https://editor.swagger.io"})
-    @GetMapping(value = "/statistics")
-    public @ResponseBody ResponseEntity<Statistics> getStatistics() {
-        return new ResponseEntity<>(
-                splunkClient.getStatistics(),
-                HeaderUtility.createHeaders(
-                        CacheConfig.MAX_AGE_STATISTICS, CacheConfig.NEXT_REFRESH_STATISTICS),
-                HttpStatus.OK);
-    }
+	public DppptAdditionalInfoController(StatisticClient statisticClient, Duration cachControl) {
+		this.statisticClient = statisticClient;
+		this.cacheControl = cachControl;
+		reloadStats();
+	}
+
+	@CrossOrigin(origins = { "https://editor.swagger.io" })
+	@GetMapping(value = "")
+	public @ResponseBody String hello() {
+		return "Hello from DP3T Additional Info WS";
+	}
+
+	@CrossOrigin(origins = { "https://editor.swagger.io" })
+	@GetMapping(value = "/statistics")
+	public @ResponseBody ResponseEntity<Statistics> getStatistics() {
+		return ResponseEntity.ok().cacheControl(CacheControl.maxAge(cacheControl)).body(currentStatistics);
+	}
+
+	public void reloadStats() {
+		logger.info("Refresh statistics");
+		try {
+			Statistics newStatistics = statisticClient.getStatistics();
+			currentStatistics = newStatistics;
+			logger.info("Successfully refreshed statistics");
+		} catch (Exception e) {
+			logger.error("Could not load statistics: ", e);
+		}
+	}
 }

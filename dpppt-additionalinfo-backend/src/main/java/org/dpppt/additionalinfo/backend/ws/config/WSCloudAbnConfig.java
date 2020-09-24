@@ -11,22 +11,26 @@
 package org.dpppt.additionalinfo.backend.ws.config;
 
 import java.util.Base64;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
 @Configuration
-@Profile("cloud-prod")
-public class WSProdConfig extends WSBaseConfig {
-    @Value("${vcap.services.ecdsa_cs_prod.credentials.privateKey}")
+@Profile("cloud-abn")
+public class WSCloudAbnConfig extends WSBaseConfig {
+	
+    @Value("${vcap.services.ecdsa_cs_abn.credentials.privateKey}")
     private String privateKey;
 
-    @Value("${vcap.services.ecdsa_cs_prod.credentials.publicKey}")
+    @Value("${vcap.services.ecdsa_cs_abn.credentials.publicKey}")
     public String publicKey;
-
-    @Override
-    public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {}
+    
+    @Value("${vcap.services.splunk_api_abn.credentials.username}")
+    private String splunkUsername;
+    
+    @Value("${vcap.services.splunk_api_abn.credentials.password}")
+    private String splunkPassword;
 
     @Override
     String getPrivateKey() {
@@ -37,4 +41,14 @@ public class WSProdConfig extends WSBaseConfig {
     String getPublicKey() {
         return new String(Base64.getDecoder().decode(publicKey));
     }
+    
+	@Override
+	String getSplunkUsername() {
+		return splunkUsername;
+	}
+
+	@Override
+	String getSplunkpassword() {
+		return splunkPassword;
+	}
 }
