@@ -35,9 +35,9 @@ public class DppptAdditionalInfoController {
 
 	private Statistics currentStatistics = new Statistics();
 
-	public DppptAdditionalInfoController(StatisticClient statisticClient, Duration cachControl) {
+	public DppptAdditionalInfoController(StatisticClient statisticClient, Duration cacheControl) {
 		this.statisticClient = statisticClient;
-		this.cacheControl = cachControl;
+		this.cacheControl = cacheControl;
 		reloadStats();
 	}
 
@@ -57,10 +57,24 @@ public class DppptAdditionalInfoController {
 		logger.info("Refresh statistics");
 		try {
 			Statistics newStatistics = statisticClient.getStatistics();
+			ignoreImplausableUpdates(newStatistics);
 			currentStatistics = newStatistics;
 			logger.info("Successfully refreshed statistics");
 		} catch (Exception e) {
 			logger.error("Could not load statistics: ", e);
+		}
+	}
+
+	private void ignoreImplausableUpdates(Statistics newStatistics) {
+        // don't update cached statistics if an updated value seems implausible
+
+        // splunk sometimes returns implausible active user numbers (especially at night)
+		Integer currentTotalActiveUsers = currentStatistics.getTotalActiveUsers();
+        if (currentTotalActiveUsers == null) {
+        	currentTotalActiveUsers = 0;
+		}
+		if (newStatistics.getTotalActiveUsers() < currentTotalActiveUsers * 0.5) {
+        	newStatistics.setTotalActiveUsers(currentStatistics.getTotalActiveUsers());
 		}
 	}
 }
