@@ -63,7 +63,7 @@ public class SplunkStatisticClient implements StatisticClient {
 
 		// Setup rest template for making http requests to Splunk. This configures a
 		// custom HTTP client with some good defaults and a custom user agent.
-		HttpClientBuilder builder = HttpClients.custom().setUserAgent("dp3t-additional-info-backend");
+		HttpClientBuilder builder = HttpClients.custom().useSystemProperties().setUserAgent("dp3t-additional-info-backend");
 		builder.disableCookieManagement().setDefaultRequestConfig(
 				RequestConfig.custom()
 						.setConnectTimeout(CONNECT_TIMEOUT)
