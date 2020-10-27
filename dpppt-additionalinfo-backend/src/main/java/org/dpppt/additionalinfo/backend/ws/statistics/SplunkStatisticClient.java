@@ -1,12 +1,7 @@
 package org.dpppt.additionalinfo.backend.ws.statistics;
 
 import java.net.URI;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.X509Certificate;
 import java.time.LocalDate;
-import java.time.Period;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,12 +10,9 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.ssl.TrustStrategy;
 import org.dpppt.additionalinfo.backend.ws.model.statistics.History;
 import org.dpppt.additionalinfo.backend.ws.model.statistics.Statistics;
 import org.slf4j.Logger;
@@ -73,17 +65,10 @@ public class SplunkStatisticClient implements StatisticClient {
 		// custom HTTP client with some good defaults and a custom user agent.
 		HttpClientBuilder builder = HttpClients.custom().setUserAgent("dp3t-additional-info-backend");
 		builder.disableCookieManagement().setDefaultRequestConfig(
-				RequestConfig.custom().setConnectTimeout(CONNECT_TIMEOUT).setSocketTimeout(SOCKET_TIMEOUT).build());
-		try {
-			TrustStrategy acceptingTrustStrategy = (X509Certificate[] chain, String authType) -> true;
-			javax.net.ssl.SSLContext sslContext = org.apache.http.ssl.SSLContexts.custom()
-					.loadTrustMaterial(null, acceptingTrustStrategy).build();
-			SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(sslContext, new NoopHostnameVerifier());
-			builder.setSSLSocketFactory(csf);
-
-		} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
-			logger.warn("Could not seup ssl context.", e);
-		}
+				RequestConfig.custom()
+						.setConnectTimeout(CONNECT_TIMEOUT)
+						.setSocketTimeout(SOCKET_TIMEOUT)
+						.build());
 
 		CloseableHttpClient httpClient = builder.build();
 		this.rt = new RestTemplate(new HttpComponentsClientHttpRequestFactory(httpClient));
