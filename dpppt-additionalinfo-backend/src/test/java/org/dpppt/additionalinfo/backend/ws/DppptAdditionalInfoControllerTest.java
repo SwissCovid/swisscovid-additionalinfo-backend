@@ -13,19 +13,21 @@ package org.dpppt.additionalinfo.backend.ws;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import java.nio.charset.Charset;
 import javax.servlet.Filter;
-
+import org.dpppt.additionalinfo.backend.ws.controller.DppptAdditionalInfoController;
+import org.dpppt.additionalinfo.backend.ws.model.statistics.Statistics;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 @ActiveProfiles({"actuator-security"})
 @SpringBootTest(
@@ -36,7 +38,9 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
             "management.endpoints.web.exposure.include=*"
         })
 public class DppptAdditionalInfoControllerTest extends BaseControllerTest {
+
     @Autowired private Filter springSecurityFilterChain;
+    @Autowired private DppptAdditionalInfoController additionalInfoController;
 
     @Before
     public void setup() throws Exception {
@@ -97,5 +101,36 @@ public class DppptAdditionalInfoControllerTest extends BaseControllerTest {
                         .andExpect(status().isOk())
                         .andReturn()
                         .getResponse();
+    }
+
+    @Test
+    public void testStatistics() throws Exception {
+        // the mock statistic client returns implausible total active users on every second reload
+
+        Integer totalActiveUsers1 = getTotalActiveUsers(); // plausible
+        additionalInfoController.reloadStats();
+        Integer totalActiveUsers2 = getTotalActiveUsers(); // implausible
+        additionalInfoController.reloadStats();
+
+        Integer totalActiveUsers3 = getTotalActiveUsers(); // plausible
+        additionalInfoController.reloadStats();
+        Integer totalActiveUsers4 = getTotalActiveUsers(); // implausible
+
+        // expected behaviour: the cached totalActiveUsers value is only updated if the statistic
+        // client sends a plausible value
+        Assert.assertEquals(totalActiveUsers1, totalActiveUsers2);
+        Assert.assertEquals(totalActiveUsers3, totalActiveUsers4);
+        Assert.assertNotEquals(totalActiveUsers1, totalActiveUsers3);
+    }
+
+    private Integer getTotalActiveUsers() throws Exception {
+        var response =
+                mockMvc.perform(get("/v1/statistics"))
+                        .andExpect(status().is2xxSuccessful())
+                        .andReturn()
+                        .getResponse();
+        Statistics statistics = objectMapper
+                .readValue(response.getContentAsString(Charset.forName("utf-8")), Statistics.class);
+        return statistics.getTotalActiveUsers();
     }
 }
