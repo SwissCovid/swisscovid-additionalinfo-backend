@@ -66,6 +66,9 @@ public abstract class WSBaseConfig implements WebMvcConfigurer {
 
 	@Value("${ws.statistics.splunk.activeapps.query:}")
 	String activeAppsQuery;
+	
+	@Value("${ws.statistics.splunk.activeapps.override:}")
+	Integer activeAppsOverride;
 
 	@Value("${ws.statistics.splunk.usedauthcodecount.query:}")
 	String usedAuthCodeCountQuery;
@@ -96,7 +99,7 @@ public abstract class WSBaseConfig implements WebMvcConfigurer {
 	public SplunkStatisticClient splunkStatisticsClient() {
 		logger.info("Creating Splunk statistics client");
 		return new SplunkStatisticClient(splunkUrl, getSplunkUsername(), getSplunkpassword(), activeAppsQuery,
-				usedAuthCodeCountQuery, positiveTestCountQuery, queryStartDate, queryEndDaysBack);
+				usedAuthCodeCountQuery, positiveTestCountQuery, queryStartDate, queryEndDaysBack, activeAppsOverride);
 	}
 
 	@Bean
