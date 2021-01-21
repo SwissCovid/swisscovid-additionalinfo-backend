@@ -41,6 +41,7 @@ public class SplunkStatisticClient implements StatisticClient {
   private final String positiveTestCountQuery;
   private final LocalDate queryStartDate;
   private final Integer queryEndDaysBack;
+  private final Integer overrideActiveAppsCount;
 
   private final RestTemplate rt;
 
@@ -57,7 +58,8 @@ public class SplunkStatisticClient implements StatisticClient {
       String usedAuthCodeCountQuery,
       String positiveTestCountQuery,
       LocalDate queryStartDate,
-      Integer queryEndDaysBack) {
+      Integer queryEndDaysBack, 
+      Integer overrideActiveAppsCount) {
     this.url = splunkUrl;
     this.username = splunkUsername;
     this.password = splunkpassword;
@@ -66,6 +68,7 @@ public class SplunkStatisticClient implements StatisticClient {
     this.positiveTestCountQuery = positiveTestCountQuery;
     this.queryStartDate = queryStartDate;
     this.queryEndDaysBack = queryEndDaysBack;
+    this.overrideActiveAppsCount = overrideActiveAppsCount;
 
     // Setup rest template for making http requests to Splunk. This configures a
     // custom HTTP client with some good defaults and a custom user agent.
@@ -141,6 +144,10 @@ public class SplunkStatisticClient implements StatisticClient {
           statistics.setTotalActiveUsers(null);
         }
       }
+    }
+    if (overrideActiveAppsCount != null) {
+    	logger.info("Override active app count. From query: " + statistics.getTotalActiveUsers() + " override with: " + overrideActiveAppsCount);
+    	statistics.setTotalActiveUsers(overrideActiveAppsCount);
     }
     logger.info("Active apps loaded");
   }
