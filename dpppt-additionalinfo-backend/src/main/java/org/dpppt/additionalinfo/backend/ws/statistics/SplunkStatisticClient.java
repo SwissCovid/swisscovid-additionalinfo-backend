@@ -197,6 +197,23 @@ public class SplunkStatisticClient implements StatisticClient {
     }
     StatisticHelper.calculateRollingAverage(statistics);
 
+    statistics.setTotalCovidcodesEntered(59532); // TODO replace mock data with splunk data
+    statistics.setTotalCovidcodesEntered0to2d(0.59576); // TODO replace mock data with splunk data
+
+    Integer lastSevenDayAverage = null;
+    Integer prevWeekSevenDayAverage = null;
+    for (int i = statistics.getHistory().size() - 1; i > 0; i--) {
+      lastSevenDayAverage = statistics.getHistory().get(i).getNewInfectionsSevenDayAverage();
+      if (lastSevenDayAverage != null) {
+        prevWeekSevenDayAverage =
+                statistics.getHistory().get(i - 7).getNewInfectionsSevenDayAverage();
+        break;
+      }
+    }
+    statistics.setNewInfectionsSevenDayAvg(lastSevenDayAverage);
+    statistics.setNewInfectionsSevenDayAvgRelPrevWeek(
+            (lastSevenDayAverage / (double) prevWeekSevenDayAverage) - 1);
+
     logger.info("Positive test count loaded");
   }
 
