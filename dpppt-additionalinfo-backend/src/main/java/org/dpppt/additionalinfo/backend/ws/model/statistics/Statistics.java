@@ -14,7 +14,7 @@ public class Statistics {
     private Integer totalActiveUsers;
 
     private Integer totalCovidcodesEntered;
-    private Double totalCovidcodesEntered0to2d;
+    private Double covidcodesEntered0to2dPrevWeek;
     private Integer newInfectionsSevenDayAvg;
     private Double newInfectionsSevenDayAvgRelPrevWeek;
 
@@ -36,12 +36,12 @@ public class Statistics {
         this.totalCovidcodesEntered = totalCovidcodesEntered;
     }
 
-    public Double getTotalCovidcodesEntered0to2d() {
-        return totalCovidcodesEntered0to2d;
+    public Double getCovidcodesEntered0to2dPrevWeek() {
+        return covidcodesEntered0to2dPrevWeek;
     }
 
-    public void setTotalCovidcodesEntered0to2d(Double totalCovidcodesEntered0to2d) {
-        this.totalCovidcodesEntered0to2d = totalCovidcodesEntered0to2d;
+    public void setCovidcodesEntered0to2dPrevWeek(Double covidcodesEntered0to2dPrevWeek) {
+        this.covidcodesEntered0to2dPrevWeek = covidcodesEntered0to2dPrevWeek;
     }
 
     public Integer getNewInfectionsSevenDayAvg() {

@@ -10,6 +10,7 @@
 
 package org.dpppt.additionalinfo.backend.ws.config;
 
+import io.jsonwebtoken.SignatureAlgorithm;
 import java.io.ByteArrayInputStream;
 import java.io.Reader;
 import java.io.StringReader;
@@ -24,7 +25,6 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
@@ -43,8 +43,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-import io.jsonwebtoken.SignatureAlgorithm;
 
 @Configuration
 public abstract class WSBaseConfig implements WebMvcConfigurer {
@@ -76,6 +74,9 @@ public abstract class WSBaseConfig implements WebMvcConfigurer {
 	@Value("${ws.statistics.splunk.positivetestcount.query:}")
 	String positiveTestCountQuery;
 
+	@Value("${ws.statistics.splunk.covidCodesEnteredAfterXDaysOnsetOfSymptoms.query:}")
+	String queryCovidCodesEnteredAfterXDaysOnsetOfSymptoms;
+
     @Value("#{T(java.time.LocalDate).parse('${ws.statistics.splunk.startdate:2020-06-01}')}")
 	LocalDate queryStartDate;
 	
@@ -93,14 +94,30 @@ public abstract class WSBaseConfig implements WebMvcConfigurer {
 
 	abstract String getSplunkpassword();
 
-	@Bean
-	@ConditionalOnProperty(prefix = "ws.statistics.splunk", name = { "url", "activeapps.query",
-			"usedauthcodecount.query", "positivetestcount.query" })
-	public SplunkStatisticClient splunkStatisticsClient() {
-		logger.info("Creating Splunk statistics client");
-		return new SplunkStatisticClient(splunkUrl, getSplunkUsername(), getSplunkpassword(), activeAppsQuery,
-				usedAuthCodeCountQuery, positiveTestCountQuery, queryStartDate, queryEndDaysBack, activeAppsOverride);
-	}
+    @Bean
+    @ConditionalOnProperty(
+            prefix = "ws.statistics.splunk",
+            name = {
+                "url",
+                "activeapps.query",
+                "usedauthcodecount.query",
+                "positivetestcount.query",
+                "covidCodesEnteredAfterXDaysOnsetOfSymptoms.query"
+            })
+    public SplunkStatisticClient splunkStatisticsClient() {
+        logger.info("Creating Splunk statistics client");
+        return new SplunkStatisticClient(
+                splunkUrl,
+                getSplunkUsername(),
+                getSplunkpassword(),
+                activeAppsQuery,
+                usedAuthCodeCountQuery,
+                positiveTestCountQuery,
+                queryCovidCodesEnteredAfterXDaysOnsetOfSymptoms,
+                queryStartDate,
+                queryEndDaysBack,
+                activeAppsOverride);
+    }
 
 	@Bean
 	@ConditionalOnMissingBean
