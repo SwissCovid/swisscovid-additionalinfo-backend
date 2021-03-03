@@ -134,7 +134,7 @@ public class SplunkStatisticClient implements StatisticClient {
                         .headers(createHeaders())
                         .body(
                                 createRequestParamsForLastXDays(
-                                        queryCovidCodesEnteredAfterXDaysOnsetOfSymptoms, 10));
+                                        queryCovidCodesEnteredAfterXDaysOnsetOfSymptoms, 7));
         logger.debug("Request entity: " + request.toString());
         ResponseEntity<String> response = rt.exchange(request, String.class);
         logger.info("Result: Status: " + response.getStatusCode() + " Body: " + response.getBody());
@@ -266,6 +266,7 @@ public class SplunkStatisticClient implements StatisticClient {
         params.add("earliest_time", "-" + daysBack + "d@d");
         params.add("latest_time", "-" + queryEndDaysBack + "d@d");
         params.add("output_mode", "json");
+        params.add("preview", "false");
         return params;
     }
 
@@ -282,6 +283,7 @@ public class SplunkStatisticClient implements StatisticClient {
         params.add("earliest_time", "-" + daysBack + "d@d");
         params.add("latest_time", "now");
         params.add("output_mode", "json");
+        params.add("preview", "false");
         return params;
     }
 
