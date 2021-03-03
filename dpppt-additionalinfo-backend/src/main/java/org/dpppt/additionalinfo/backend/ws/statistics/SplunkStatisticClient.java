@@ -266,7 +266,6 @@ public class SplunkStatisticClient implements StatisticClient {
         params.add("earliest_time", "-" + daysBack + "d@d");
         params.add("latest_time", "-" + queryEndDaysBack + "d@d");
         params.add("output_mode", "json");
-        params.add("preview", "false");
         return params;
     }
 
@@ -283,7 +282,6 @@ public class SplunkStatisticClient implements StatisticClient {
         params.add("earliest_time", "-" + daysBack + "d@d");
         params.add("latest_time", "now");
         params.add("output_mode", "json");
-        params.add("preview", "false");
         return params;
     }
 
@@ -306,14 +304,16 @@ public class SplunkStatisticClient implements StatisticClient {
             throws JsonMappingException, JsonProcessingException {
         String sanitizedSplunkApiStrint = splunkApiResponse.replaceAll("\"NO_DATA\"", "null");
         ObjectMapper om = new ObjectMapper();
-        List<SplunkResult> result = new ArrayList<>();
+        List<SplunkResult> results = new ArrayList<>();
         String[] lines = sanitizedSplunkApiStrint.split("\\n");
         for (String line : lines) {
             SplunkResponse response = om.readValue(line, SplunkResponse.class);
-            result.add(response.getResult());
+            if (!Boolean.TRUE.equals(response.getPreview())) {
+                results.add(response.getResult());
+            }
         }
         Collections.sort(
-                result, Collections.reverseOrder(Comparator.comparing(SplunkResult::getTime)));
-        return result;
+                results, Collections.reverseOrder(Comparator.comparing(SplunkResult::getTime)));
+        return results;
     }
 }

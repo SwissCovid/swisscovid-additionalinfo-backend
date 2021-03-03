@@ -4,20 +4,27 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SplunkResponse {
+    private Boolean preview;
+    private SplunkResult result;
 
-	private SplunkResult result;
+    public Boolean getPreview() {
+        return preview;
+    }
 
-	public SplunkResult getResult() {
-		return result;
-	}
+    public void setPreview(Boolean preview) {
+        this.preview = preview;
+    }
 
-	public void setResult(SplunkResult result) {
-		this.result = result;
-	}
+    public SplunkResult getResult() {
+        return result;
+    }
 
-	@Override
-	public String toString() {
-		return "SplunkResponse [result=" + result + "]";
-	}
+    public void setResult(SplunkResult result) {
+        this.result = result;
+    }
 
+    @Override
+    public String toString() {
+        return "SplunkResponse{" + "preview=" + preview + ", result=" + result + '}';
+    }
 }
