@@ -1,0 +1,6 @@
+### config request
+
+GET {{baseUrl}}/v1/statistics
+
+###
+

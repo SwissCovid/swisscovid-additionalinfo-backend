@@ -25,15 +25,19 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import javax.sql.DataSource;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
 import org.dpppt.additionalinfo.backend.ws.controller.DppptAdditionalInfoController;
+import org.dpppt.additionalinfo.backend.ws.data.HistoryDataService;
+import org.dpppt.additionalinfo.backend.ws.data.JdbcHistoryDataServiceImpl;
 import org.dpppt.additionalinfo.backend.ws.statistics.MockStatisticClient;
 import org.dpppt.additionalinfo.backend.ws.statistics.SplunkStatisticClient;
 import org.dpppt.additionalinfo.backend.ws.statistics.StatisticClient;
 import org.dpppt.backend.shared.interceptor.HeaderInjector;
 import org.dpppt.backend.shared.security.filter.ResponseWrapperFilter;
+import org.flywaydb.core.Flyway;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,6 +45,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -95,7 +100,14 @@ public abstract class WSBaseConfig implements WebMvcConfigurer {
 
     abstract String getSplunkpassword();
 
+    public abstract DataSource dataSource();
+
+    public abstract Flyway flyway();
+
+    public abstract String getDbType();
+
     @Bean
+    @DependsOn({"flyway"})
     @ConditionalOnProperty(
             prefix = "ws.statistics.splunk",
             name = {
@@ -105,9 +117,10 @@ public abstract class WSBaseConfig implements WebMvcConfigurer {
                 "positivetestcount.query",
                 "covidCodesEnteredAfterXDaysOnsetOfSymptoms.query"
             })
-    public SplunkStatisticClient splunkStatisticsClient() {
+    public SplunkStatisticClient splunkStatisticsClient(HistoryDataService historyDataService) {
         logger.info("Creating Splunk statistics client");
         return new SplunkStatisticClient(
+                historyDataService,
                 splunkUrl,
                 getSplunkUsername(),
                 getSplunkpassword(),
@@ -121,13 +134,19 @@ public abstract class WSBaseConfig implements WebMvcConfigurer {
     }
 
     @Bean
+    @DependsOn({"flyway"})
     @ConditionalOnMissingBean
-    public StatisticClient mockStatisticsClient() {
+    public StatisticClient mockStatisticsClient(HistoryDataService historyDataService) {
         logger.info("Creating Mock statistics client");
-        return new MockStatisticClient();
+        return new MockStatisticClient(historyDataService);
     }
 
     @Bean
+    public HistoryDataService historyDataService(DataSource dataSource) {
+        return new JdbcHistoryDataServiceImpl(dataSource);
+    }
+
+    @Bean()
     public DppptAdditionalInfoController dppptAdditionalInfoController(
             StatisticClient statisticClient) {
         return new DppptAdditionalInfoController(statisticClient, cacheControl);

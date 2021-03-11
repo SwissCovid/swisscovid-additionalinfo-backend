@@ -15,6 +15,7 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.dpppt.additionalinfo.backend.ws.data.HistoryDataService;
 import org.dpppt.additionalinfo.backend.ws.model.statistics.History;
 import org.dpppt.additionalinfo.backend.ws.model.statistics.Statistics;
 import org.slf4j.Logger;
@@ -31,6 +32,7 @@ import org.springframework.web.client.RestTemplate;
 
 public class SplunkStatisticClient implements StatisticClient {
 
+    private final HistoryDataService historyDataService;
     private final String url;
     private final String username;
     private final String password;
@@ -50,6 +52,7 @@ public class SplunkStatisticClient implements StatisticClient {
     private static final Logger logger = LoggerFactory.getLogger(SplunkStatisticClient.class);
 
     public SplunkStatisticClient(
+            HistoryDataService historyDataService,
             String splunkUrl,
             String splunkUsername,
             String splunkpassword,
@@ -60,6 +63,7 @@ public class SplunkStatisticClient implements StatisticClient {
             LocalDate queryStartDate,
             Integer queryEndDaysBack,
             Integer overrideActiveAppsCount) {
+        this.historyDataService = historyDataService;
         this.url = splunkUrl;
         this.username = splunkUsername;
         this.password = splunkpassword;
@@ -242,19 +246,28 @@ public class SplunkStatisticClient implements StatisticClient {
         }
         StatisticHelper.calculateRollingAverage(statistics);
 
-        Integer lastSevenDayAverage = null;
+        Integer latestSevenDayAverage = null;
         Integer prevWeekSevenDayAverage = null;
         for (int i = statistics.getHistory().size() - 1; i > 0; i--) {
-            lastSevenDayAverage = statistics.getHistory().get(i).getNewInfectionsSevenDayAverage();
-            if (lastSevenDayAverage != null) {
+            latestSevenDayAverage =
+                    statistics.getHistory().get(i).getNewInfectionsSevenDayAverage();
+            if (latestSevenDayAverage != null) {
+                LocalDate day = statistics.getHistory().get(i).getDate();
+                historyDataService.upsertLatestSevenDayAvgForDay(latestSevenDayAverage, day);
                 prevWeekSevenDayAverage =
-                        statistics.getHistory().get(i - 7).getNewInfectionsSevenDayAverage();
+                        historyDataService.findLatestSevenDayAvgForDay(day.minusDays(7));
+                if (prevWeekSevenDayAverage == null) {
+                    logger.warn(
+                            "no seven day avg history for {}. using current data as fallback", day);
+                    prevWeekSevenDayAverage =
+                            statistics.getHistory().get(i - 7).getNewInfectionsSevenDayAverage();
+                }
                 break;
             }
         }
-        statistics.setNewInfectionsSevenDayAvg(lastSevenDayAverage);
+        statistics.setNewInfectionsSevenDayAvg(latestSevenDayAverage);
         statistics.setNewInfectionsSevenDayAvgRelPrevWeek(
-                (lastSevenDayAverage / (double) prevWeekSevenDayAverage) - 1);
+                (latestSevenDayAverage / (double) prevWeekSevenDayAverage) - 1);
 
         logger.info("Positive test count loaded");
     }

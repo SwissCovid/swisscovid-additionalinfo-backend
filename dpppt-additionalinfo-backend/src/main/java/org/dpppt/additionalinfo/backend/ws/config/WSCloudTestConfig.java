@@ -17,7 +17,7 @@ import org.springframework.context.annotation.Profile;
 
 @Configuration
 @Profile("cloud-test")
-public class WSCloudTestConfig extends WSBaseConfig {
+public class WSCloudTestConfig extends WSCloudBaseConfig {
 
     @Value("${vcap.services.ecdsa_cs_test.credentials.privateKey}")
     private String privateKey;

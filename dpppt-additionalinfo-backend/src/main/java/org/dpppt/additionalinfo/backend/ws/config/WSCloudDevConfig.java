@@ -17,7 +17,7 @@ import org.springframework.context.annotation.Profile;
 
 @Configuration
 @Profile("cloud-dev")
-public class WSCloudDevConfig extends WSBaseConfig {
+public class WSCloudDevConfig extends WSCloudBaseConfig {
 
     @Value("${vcap.services.ecdsa_cs_dev.credentials.privateKey}")
     private String privateKey;

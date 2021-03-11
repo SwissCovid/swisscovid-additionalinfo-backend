@@ -17,7 +17,7 @@ import org.springframework.context.annotation.Profile;
 
 @Configuration
 @Profile("cloud-prod")
-public class WSCloudProdConfig extends WSBaseConfig {
+public class WSCloudProdConfig extends WSCloudBaseConfig {
 
     @Value("${vcap.services.ecdsa_cs_prod.credentials.privateKey}")
     private String privateKey;
