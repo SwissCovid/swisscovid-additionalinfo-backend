@@ -12,7 +12,9 @@ package org.dpppt.additionalinfo.backend.ws;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.test.context.ActiveProfiles;
 
 @ComponentScan(basePackages = {"org.dpppt.additionalinfo.backend.ws.config"})
 @SpringBootApplication
+@ActiveProfiles("postgres")
 public class TestApplication {}
