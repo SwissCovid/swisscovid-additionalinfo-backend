@@ -276,7 +276,8 @@ public class SplunkStatisticClient implements StatisticClient {
      * @param daysBack
      * @return
      */
-    private MultiValueMap<String, String> createRequestParamsForLastXDays(String query, int daysBack) {
+    private MultiValueMap<String, String> createRequestParamsForLastXDays(
+            String query, int daysBack) {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("search", query);
         params.add("earliest_time", "-" + daysBack + "d@d");

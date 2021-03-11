@@ -47,52 +47,53 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public abstract class WSBaseConfig implements WebMvcConfigurer {
 
-	protected final Logger logger = LoggerFactory.getLogger(getClass());
-	final SignatureAlgorithm algorithm = SignatureAlgorithm.ES256;
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
+    final SignatureAlgorithm algorithm = SignatureAlgorithm.ES256;
 
-	@Value("${ws.headers.protected:}")
-	List<String> protectedHeaders;
+    @Value("${ws.headers.protected:}")
+    List<String> protectedHeaders;
 
-	// used for jwt token validity
-	int retentionDays = 1;
+    // used for jwt token validity
+    int retentionDays = 1;
 
-	@Value("#{${ws.security.headers: {'X-Content-Type-Options':'nosniff', 'X-Frame-Options':'DENY','X-Xss-Protection':'1; mode=block'}}}")
-	Map<String, String> additionalHeaders;
+    @Value(
+            "#{${ws.security.headers: {'X-Content-Type-Options':'nosniff', 'X-Frame-Options':'DENY','X-Xss-Protection':'1; mode=block'}}}")
+    Map<String, String> additionalHeaders;
 
-	@Value("${ws.statistics.splunk.url:}")
-	String splunkUrl;
+    @Value("${ws.statistics.splunk.url:}")
+    String splunkUrl;
 
-	@Value("${ws.statistics.splunk.activeapps.query:}")
-	String activeAppsQuery;
-	
-	@Value("${ws.statistics.splunk.activeapps.override:}")
-	Integer activeAppsOverride;
+    @Value("${ws.statistics.splunk.activeapps.query:}")
+    String activeAppsQuery;
 
-	@Value("${ws.statistics.splunk.usedauthcodecount.query:}")
-	String usedAuthCodeCountQuery;
+    @Value("${ws.statistics.splunk.activeapps.override:}")
+    Integer activeAppsOverride;
 
-	@Value("${ws.statistics.splunk.positivetestcount.query:}")
-	String positiveTestCountQuery;
+    @Value("${ws.statistics.splunk.usedauthcodecount.query:}")
+    String usedAuthCodeCountQuery;
 
-	@Value("${ws.statistics.splunk.covidCodesEnteredAfterXDaysOnsetOfSymptoms.query:}")
-	String queryCovidCodesEnteredAfterXDaysOnsetOfSymptoms;
+    @Value("${ws.statistics.splunk.positivetestcount.query:}")
+    String positiveTestCountQuery;
+
+    @Value("${ws.statistics.splunk.covidCodesEnteredAfterXDaysOnsetOfSymptoms.query:}")
+    String queryCovidCodesEnteredAfterXDaysOnsetOfSymptoms;
 
     @Value("#{T(java.time.LocalDate).parse('${ws.statistics.splunk.startdate:2020-06-01}')}")
-	LocalDate queryStartDate;
-	
-	@Value("${ws.statistics.splunk.enddaysback:0}")
-	Integer queryEndDaysBack;
+    LocalDate queryStartDate;
 
-	@Value("${ws.statistics.cachecontrol:PT1H}")
-	Duration cacheControl;
+    @Value("${ws.statistics.splunk.enddaysback:0}")
+    Integer queryEndDaysBack;
 
-	abstract String getPublicKey();
+    @Value("${ws.statistics.cachecontrol:PT1H}")
+    Duration cacheControl;
 
-	abstract String getPrivateKey();
+    abstract String getPublicKey();
 
-	abstract String getSplunkUsername();
+    abstract String getPrivateKey();
 
-	abstract String getSplunkpassword();
+    abstract String getSplunkUsername();
+
+    abstract String getSplunkpassword();
 
     @Bean
     @ConditionalOnProperty(
@@ -119,61 +120,63 @@ public abstract class WSBaseConfig implements WebMvcConfigurer {
                 activeAppsOverride);
     }
 
-	@Bean
-	@ConditionalOnMissingBean
-	public StatisticClient mockStatisticsClient() {
-		logger.info("Creating Mock statistics client");
-		return new MockStatisticClient();
-	}
+    @Bean
+    @ConditionalOnMissingBean
+    public StatisticClient mockStatisticsClient() {
+        logger.info("Creating Mock statistics client");
+        return new MockStatisticClient();
+    }
 
-	@Bean
-	public DppptAdditionalInfoController dppptAdditionalInfoController(StatisticClient statisticClient) {
-		return new DppptAdditionalInfoController(statisticClient, cacheControl);
-	}
+    @Bean
+    public DppptAdditionalInfoController dppptAdditionalInfoController(
+            StatisticClient statisticClient) {
+        return new DppptAdditionalInfoController(statisticClient, cacheControl);
+    }
 
-	@Bean
-	public ResponseWrapperFilter hashFilter() {
-		return new ResponseWrapperFilter(getKeyPair(algorithm), retentionDays, protectedHeaders);
-	}
+    @Bean
+    public ResponseWrapperFilter hashFilter() {
+        return new ResponseWrapperFilter(getKeyPair(algorithm), retentionDays, protectedHeaders);
+    }
 
-	@Bean
-	public HeaderInjector securityHeaderInjector() {
-		return new HeaderInjector(additionalHeaders);
-	}
+    @Bean
+    public HeaderInjector securityHeaderInjector() {
+        return new HeaderInjector(additionalHeaders);
+    }
 
-	@Override
-	public void addInterceptors(InterceptorRegistry registry) {
-		registry.addInterceptor(securityHeaderInjector());
-	}
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(securityHeaderInjector());
+    }
 
-	public KeyPair getKeyPair(SignatureAlgorithm algorithm) {
-		Security.addProvider(new BouncyCastleProvider());
-		Security.setProperty("crypto.policy", "unlimited");
-		return new KeyPair(loadPublicKeyFromString(), loadPrivateKeyFromString());
-	}
+    public KeyPair getKeyPair(SignatureAlgorithm algorithm) {
+        Security.addProvider(new BouncyCastleProvider());
+        Security.setProperty("crypto.policy", "unlimited");
+        return new KeyPair(loadPublicKeyFromString(), loadPrivateKeyFromString());
+    }
 
-	private PrivateKey loadPrivateKeyFromString() {
-		try {
-			String privateKey = getPrivateKey();
-			Reader reader = new StringReader(privateKey);
-			PemReader readerPem = new PemReader(reader);
-			PemObject obj = readerPem.readPemObject();
-			PKCS8EncodedKeySpec pkcs8KeySpec = new PKCS8EncodedKeySpec(obj.getContent());
-			KeyFactory kf = KeyFactory.getInstance("ECDSA", "BC");
-			return (PrivateKey) kf.generatePrivate(pkcs8KeySpec);
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			throw new RuntimeException();
-		}
-	}
+    private PrivateKey loadPrivateKeyFromString() {
+        try {
+            String privateKey = getPrivateKey();
+            Reader reader = new StringReader(privateKey);
+            PemReader readerPem = new PemReader(reader);
+            PemObject obj = readerPem.readPemObject();
+            PKCS8EncodedKeySpec pkcs8KeySpec = new PKCS8EncodedKeySpec(obj.getContent());
+            KeyFactory kf = KeyFactory.getInstance("ECDSA", "BC");
+            return (PrivateKey) kf.generatePrivate(pkcs8KeySpec);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new RuntimeException();
+        }
+    }
 
-	private PublicKey loadPublicKeyFromString() {
-		try {
-			return CertificateFactory.getInstance("X.509")
-					.generateCertificate(new ByteArrayInputStream(getPublicKey().getBytes())).getPublicKey();
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			throw new RuntimeException();
-		}
-	}
+    private PublicKey loadPublicKeyFromString() {
+        try {
+            return CertificateFactory.getInstance("X.509")
+                    .generateCertificate(new ByteArrayInputStream(getPublicKey().getBytes()))
+                    .getPublicKey();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new RuntimeException();
+        }
+    }
 }

@@ -11,7 +11,6 @@
 package org.dpppt.additionalinfo.backend.ws.config;
 
 import java.util.Base64;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -20,29 +19,29 @@ import org.springframework.context.annotation.Profile;
 @Profile("dev")
 public class WSDevConfig extends WSBaseConfig {
 
-	@Value("${ws.ecdsa.credentials.privateKey:}")
-	private String privateKey;
+    @Value("${ws.ecdsa.credentials.privateKey:}")
+    private String privateKey;
 
-	@Value("${ws.ecdsa.credentials.publicKey:}")
-	public String publicKey;
+    @Value("${ws.ecdsa.credentials.publicKey:}")
+    public String publicKey;
 
-	@Override
-	String getPrivateKey() {
-		return new String(Base64.getDecoder().decode(privateKey));
-	}
+    @Override
+    String getPrivateKey() {
+        return new String(Base64.getDecoder().decode(privateKey));
+    }
 
-	@Override
-	String getPublicKey() {
-		return new String(Base64.getDecoder().decode(publicKey));
-	}
+    @Override
+    String getPublicKey() {
+        return new String(Base64.getDecoder().decode(publicKey));
+    }
 
-	@Override
-	String getSplunkUsername() {
-		throw new IllegalStateException("No splunk configuration in dev profile");
-	}
+    @Override
+    String getSplunkUsername() {
+        throw new IllegalStateException("No splunk configuration in dev profile");
+    }
 
-	@Override
-	String getSplunkpassword() {
-		throw new IllegalStateException("No splunk configuration in dev profile");
-	}
+    @Override
+    String getSplunkpassword() {
+        throw new IllegalStateException("No splunk configuration in dev profile");
+    }
 }

@@ -11,7 +11,6 @@
 package org.dpppt.additionalinfo.backend.ws.config;
 
 import java.util.Base64;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -19,36 +18,36 @@ import org.springframework.context.annotation.Profile;
 @Configuration
 @Profile("cloud-test")
 public class WSCloudTestConfig extends WSBaseConfig {
-	
-	@Value("${vcap.services.ecdsa_cs_test.credentials.privateKey}")
-	private String privateKey;
 
-	@Value("${vcap.services.ecdsa_cs_test.credentials.publicKey}")
-	public String publicKey;
+    @Value("${vcap.services.ecdsa_cs_test.credentials.privateKey}")
+    private String privateKey;
 
-	@Value("${vcap.services.splunk_api_test.credentials.username}")
-	private String splunkUsername;
+    @Value("${vcap.services.ecdsa_cs_test.credentials.publicKey}")
+    public String publicKey;
 
-	@Value("${vcap.services.splunk_api_test.credentials.password}")
-	private String splunkPassword;
+    @Value("${vcap.services.splunk_api_test.credentials.username}")
+    private String splunkUsername;
 
-	@Override
-	String getPrivateKey() {
-		return new String(Base64.getDecoder().decode(privateKey));
-	}
+    @Value("${vcap.services.splunk_api_test.credentials.password}")
+    private String splunkPassword;
 
-	@Override
-	String getPublicKey() {
-		return new String(Base64.getDecoder().decode(publicKey));
-	}
+    @Override
+    String getPrivateKey() {
+        return new String(Base64.getDecoder().decode(privateKey));
+    }
 
-	@Override
-	String getSplunkUsername() {
-		return splunkUsername;
-	}
+    @Override
+    String getPublicKey() {
+        return new String(Base64.getDecoder().decode(publicKey));
+    }
 
-	@Override
-	String getSplunkpassword() {
-		return splunkPassword;
-	}
+    @Override
+    String getSplunkUsername() {
+        return splunkUsername;
+    }
+
+    @Override
+    String getSplunkpassword() {
+        return splunkPassword;
+    }
 }

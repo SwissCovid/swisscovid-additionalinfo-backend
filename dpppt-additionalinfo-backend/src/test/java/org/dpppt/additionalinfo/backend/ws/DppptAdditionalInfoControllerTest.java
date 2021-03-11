@@ -129,8 +129,9 @@ public class DppptAdditionalInfoControllerTest extends BaseControllerTest {
                         .andExpect(status().is2xxSuccessful())
                         .andReturn()
                         .getResponse();
-        Statistics statistics = objectMapper
-                .readValue(response.getContentAsString(Charset.forName("utf-8")), Statistics.class);
+        Statistics statistics =
+                objectMapper.readValue(
+                        response.getContentAsString(Charset.forName("utf-8")), Statistics.class);
         return statistics.getTotalActiveUsers();
     }
 }

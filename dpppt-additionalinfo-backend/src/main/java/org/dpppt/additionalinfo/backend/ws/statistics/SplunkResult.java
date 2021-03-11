@@ -7,69 +7,68 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import java.time.LocalDateTime;
 
-/**
- * This class is used to represent multiple splunk result variants
- */
+/** This class is used to represent multiple splunk result variants */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SplunkResult {
 
-	@JsonProperty(value = "_time")
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss.SSS z")
-	@JsonDeserialize(using = LocalDateTimeDeserializer.class)
-	private LocalDateTime time;
+    @JsonProperty(value = "_time")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss.SSS z")
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    private LocalDateTime time;
 
-	@JsonProperty(value = "active Apps")
-	private Integer activeApps;
+    @JsonProperty(value = "active Apps")
+    private Integer activeApps;
 
-	@JsonProperty(value = "usedAuthorizationCodeCount")
-	private Integer usedAuthorizationCodesCount;
+    @JsonProperty(value = "usedAuthorizationCodeCount")
+    private Integer usedAuthorizationCodesCount;
 
-	@JsonProperty(value = "positiveTestCount")
-	private Integer positiveTestCount;
+    @JsonProperty(value = "positiveTestCount")
+    private Integer positiveTestCount;
 
-	/**
-	 * queryCovidCodesEnteredAfterXDaysOnsetOfSymptoms result
-	 */
-	@JsonProperty(value = "00_days")
-	private Integer afterZeroDays;
-	@JsonProperty(value = "01_days")
-	private Integer afterOneDays;
-	@JsonProperty(value = "02_days")
-	private Integer afterTwoDays;
-	@JsonProperty(value = "Total")
-	private Integer total;
+    /** queryCovidCodesEnteredAfterXDaysOnsetOfSymptoms result */
+    @JsonProperty(value = "00_days")
+    private Integer afterZeroDays;
 
-	public LocalDateTime getTime() {
-		return time;
-	}
+    @JsonProperty(value = "01_days")
+    private Integer afterOneDays;
 
-	public void setTime(LocalDateTime time) {
-		this.time = time;
-	}
+    @JsonProperty(value = "02_days")
+    private Integer afterTwoDays;
 
-	public Integer getActiveApps() {
-		return activeApps;
-	}
+    @JsonProperty(value = "Total")
+    private Integer total;
 
-	public void setActiveApps(Integer activeApps) {
-		this.activeApps = activeApps;
-	}
+    public LocalDateTime getTime() {
+        return time;
+    }
 
-	public Integer getUsedAuthorizationCodesCount() {
-		return usedAuthorizationCodesCount;
-	}
+    public void setTime(LocalDateTime time) {
+        this.time = time;
+    }
 
-	public void setUsedAuthorizationCodesCount(Integer usedAuthorizationCodesCount) {
-		this.usedAuthorizationCodesCount = usedAuthorizationCodesCount;
-	}
+    public Integer getActiveApps() {
+        return activeApps;
+    }
 
-	public Integer getPositiveTestCount() {
-		return positiveTestCount;
-	}
+    public void setActiveApps(Integer activeApps) {
+        this.activeApps = activeApps;
+    }
 
-	public void setPositiveTestCount(Integer positiveTestCount) {
-		this.positiveTestCount = positiveTestCount;
-	}
+    public Integer getUsedAuthorizationCodesCount() {
+        return usedAuthorizationCodesCount;
+    }
+
+    public void setUsedAuthorizationCodesCount(Integer usedAuthorizationCodesCount) {
+        this.usedAuthorizationCodesCount = usedAuthorizationCodesCount;
+    }
+
+    public Integer getPositiveTestCount() {
+        return positiveTestCount;
+    }
+
+    public void setPositiveTestCount(Integer positiveTestCount) {
+        this.positiveTestCount = positiveTestCount;
+    }
 
     public int getAfterZeroDays() {
         return (afterZeroDays != null) ? afterZeroDays : 0;
@@ -115,17 +114,25 @@ public class SplunkResult {
         this.total = total;
     }
 
-	@Override
-	public String toString() {
-		return "SplunkResult{" +
-				"time=" + time +
-				", activeApps=" + activeApps +
-				", usedAuthorizationCodesCount=" + usedAuthorizationCodesCount +
-				", positiveTestCount=" + positiveTestCount +
-				", afterZeroDays=" + afterZeroDays +
-				", afterOneDays=" + afterOneDays +
-				", afterTwoDays=" + afterTwoDays +
-				", total=" + total +
-				'}';
-	}
+    @Override
+    public String toString() {
+        return "SplunkResult{"
+                + "time="
+                + time
+                + ", activeApps="
+                + activeApps
+                + ", usedAuthorizationCodesCount="
+                + usedAuthorizationCodesCount
+                + ", positiveTestCount="
+                + positiveTestCount
+                + ", afterZeroDays="
+                + afterZeroDays
+                + ", afterOneDays="
+                + afterOneDays
+                + ", afterTwoDays="
+                + afterTwoDays
+                + ", total="
+                + total
+                + '}';
+    }
 }
