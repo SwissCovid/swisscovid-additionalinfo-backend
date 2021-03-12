@@ -10,9 +10,14 @@
 
 package org.dpppt.additionalinfo.backend.ws.config;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import java.util.Base64;
-
+import java.util.Properties;
+import javax.sql.DataSource;
+import org.flywaydb.core.Flyway;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
@@ -20,29 +25,89 @@ import org.springframework.context.annotation.Profile;
 @Profile("dev")
 public class WSDevConfig extends WSBaseConfig {
 
-	@Value("${ws.ecdsa.credentials.privateKey:}")
-	private String privateKey;
+    @Value("${datasource.username}")
+    String dataSourceUser;
 
-	@Value("${ws.ecdsa.credentials.publicKey:}")
-	public String publicKey;
+    @Value("${datasource.password}")
+    String dataSourcePassword;
 
-	@Override
-	String getPrivateKey() {
-		return new String(Base64.getDecoder().decode(privateKey));
-	}
+    @Value("${datasource.url}")
+    String dataSourceUrl;
 
-	@Override
-	String getPublicKey() {
-		return new String(Base64.getDecoder().decode(publicKey));
-	}
+    @Value("${datasource.driverClassName}")
+    String dataSourceDriver;
 
-	@Override
-	String getSplunkUsername() {
-		throw new IllegalStateException("No splunk configuration in dev profile");
-	}
+    @Value("${datasource.failFast}")
+    String dataSourceFailFast;
 
-	@Override
-	String getSplunkpassword() {
-		throw new IllegalStateException("No splunk configuration in dev profile");
-	}
+    @Value("${datasource.maximumPoolSize}")
+    String dataSourceMaximumPoolSize;
+
+    @Value("${datasource.maxLifetime}")
+    String dataSourceMaxLifetime;
+
+    @Value("${datasource.idleTimeout}")
+    String dataSourceIdleTimeout;
+
+    @Value("${datasource.connectionTimeout}")
+    String dataSourceConnectionTimeout;
+
+    @Value("${ws.ecdsa.credentials.privateKey:}")
+    private String privateKey;
+
+    @Value("${ws.ecdsa.credentials.publicKey:}")
+    public String publicKey;
+
+    @Bean(destroyMethod = "close")
+    public DataSource dataSource() {
+        HikariConfig config = new HikariConfig();
+        Properties props = new Properties();
+        props.put("url", dataSourceUrl);
+        props.put("user", dataSourceUser);
+        props.put("password", dataSourcePassword);
+        config.setDataSourceProperties(props);
+        config.setDataSourceClassName(dataSourceDriver);
+        config.setMaximumPoolSize(Integer.parseInt(dataSourceMaximumPoolSize));
+        config.setMaxLifetime(Integer.parseInt(dataSourceMaxLifetime));
+        config.setIdleTimeout(Integer.parseInt(dataSourceIdleTimeout));
+        config.setConnectionTimeout(Integer.parseInt(dataSourceConnectionTimeout));
+        return new HikariDataSource(config);
+    }
+
+    @Bean("flyway")
+    @Override
+    public Flyway flyway() {
+        Flyway flyWay =
+                Flyway.configure()
+                        .dataSource(dataSource())
+                        .locations("classpath:/db/migration/pgsql")
+                        .load();
+        flyWay.migrate();
+        return flyWay;
+    }
+
+    @Override
+    public String getDbType() {
+        return "pgsql";
+    }
+
+    @Override
+    String getPrivateKey() {
+        return new String(Base64.getDecoder().decode(privateKey));
+    }
+
+    @Override
+    String getPublicKey() {
+        return new String(Base64.getDecoder().decode(publicKey));
+    }
+
+    @Override
+    String getSplunkUsername() {
+        throw new IllegalStateException("No splunk configuration in dev profile");
+    }
+
+    @Override
+    String getSplunkpassword() {
+        throw new IllegalStateException("No splunk configuration in dev profile");
+    }
 }

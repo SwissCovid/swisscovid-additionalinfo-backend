@@ -11,14 +11,13 @@
 package org.dpppt.additionalinfo.backend.ws.config;
 
 import java.util.Base64;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 @Configuration
 @Profile("cloud-dev")
-public class WSCloudDevConfig extends WSBaseConfig {
+public class WSCloudDevConfig extends WSCloudBaseConfig {
 
     @Value("${vcap.services.ecdsa_cs_dev.credentials.privateKey}")
     private String privateKey;
@@ -28,10 +27,9 @@ public class WSCloudDevConfig extends WSBaseConfig {
 
     @Value("${vcap.services.splunk_api_dev.credentials.username}")
     private String splunkUsername;
-    
+
     @Value("${vcap.services.splunk_api_dev.credentials.password}")
     private String splunkPassword;
-  
 
     @Override
     String getPrivateKey() {
@@ -43,13 +41,13 @@ public class WSCloudDevConfig extends WSBaseConfig {
         return new String(Base64.getDecoder().decode(publicKey));
     }
 
-	@Override
-	String getSplunkUsername() {
-		return splunkUsername;
-	}
+    @Override
+    String getSplunkUsername() {
+        return splunkUsername;
+    }
 
-	@Override
-	String getSplunkpassword() {
-		return splunkPassword;
-	}
+    @Override
+    String getSplunkpassword() {
+        return splunkPassword;
+    }
 }

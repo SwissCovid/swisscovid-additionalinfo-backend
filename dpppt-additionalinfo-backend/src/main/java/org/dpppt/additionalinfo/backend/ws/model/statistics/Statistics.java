@@ -1,44 +1,78 @@
 package org.dpppt.additionalinfo.backend.ws.model.statistics;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.dpppt.additionalinfo.backend.ws.json.CustomLocalDateSerializer;
-
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 public class Statistics {
 
-	@JsonSerialize(using = CustomLocalDateSerializer.class)
-	private LocalDate lastUpdated;
-	
-	private Integer totalActiveUsers;
-	
-	private List<History> history = new ArrayList<History>();
+    @JsonSerialize(using = CustomLocalDateSerializer.class)
+    private LocalDate lastUpdated;
 
-	public Integer getTotalActiveUsers() {
-		return totalActiveUsers;
-	}
+    private Integer totalActiveUsers;
 
-	public void setTotalActiveUsers(Integer totalActiveUsers) {
-		this.totalActiveUsers = totalActiveUsers;
-	}
+    private Integer totalCovidcodesEntered;
+    private Double covidcodesEntered0to2dPrevWeek;
+    private Integer newInfectionsSevenDayAvg;
+    private Double newInfectionsSevenDayAvgRelPrevWeek;
 
-	public List<History> getHistory() {
-		return history;
-	}
+    private List<History> history = new ArrayList<History>();
 
-	public void setHistory(List<History> history) {
-		this.history = history;
-	}
+    public Integer getTotalActiveUsers() {
+        return totalActiveUsers;
+    }
 
-	public LocalDate getLastUpdated() {
-		return lastUpdated;
-	}
+    public void setTotalActiveUsers(Integer totalActiveUsers) {
+        this.totalActiveUsers = totalActiveUsers;
+    }
 
-	public void setLastUpdated(LocalDate lastUpdated) {
-		this.lastUpdated = lastUpdated;
-	}
+    public Integer getTotalCovidcodesEntered() {
+        return totalCovidcodesEntered;
+    }
 
+    public void setTotalCovidcodesEntered(Integer totalCovidcodesEntered) {
+        this.totalCovidcodesEntered = totalCovidcodesEntered;
+    }
+
+    public Double getCovidcodesEntered0to2dPrevWeek() {
+        return covidcodesEntered0to2dPrevWeek;
+    }
+
+    public void setCovidcodesEntered0to2dPrevWeek(Double covidcodesEntered0to2dPrevWeek) {
+        this.covidcodesEntered0to2dPrevWeek = covidcodesEntered0to2dPrevWeek;
+    }
+
+    public Integer getNewInfectionsSevenDayAvg() {
+        return newInfectionsSevenDayAvg;
+    }
+
+    public void setNewInfectionsSevenDayAvg(Integer newInfectionsSevenDayAvg) {
+        this.newInfectionsSevenDayAvg = newInfectionsSevenDayAvg;
+    }
+
+    public Double getNewInfectionsSevenDayAvgRelPrevWeek() {
+        return newInfectionsSevenDayAvgRelPrevWeek;
+    }
+
+    public void setNewInfectionsSevenDayAvgRelPrevWeek(Double newInfectionsSevenDayAvgRelPrevWeek) {
+        this.newInfectionsSevenDayAvgRelPrevWeek = newInfectionsSevenDayAvgRelPrevWeek;
+    }
+
+    public List<History> getHistory() {
+        return history;
+    }
+
+    public void setHistory(List<History> history) {
+        this.history = history;
+    }
+
+    public LocalDate getLastUpdated() {
+        return lastUpdated;
+    }
+
+    public void setLastUpdated(LocalDate lastUpdated) {
+        this.lastUpdated = lastUpdated;
+    }
 }

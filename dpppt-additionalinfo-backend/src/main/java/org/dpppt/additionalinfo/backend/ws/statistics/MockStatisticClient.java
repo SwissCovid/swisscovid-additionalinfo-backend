@@ -2,13 +2,23 @@ package org.dpppt.additionalinfo.backend.ws.statistics;
 
 import java.time.LocalDate;
 import java.util.Random;
+import org.dpppt.additionalinfo.backend.ws.data.HistoryDataService;
 import org.dpppt.additionalinfo.backend.ws.model.statistics.History;
 import org.dpppt.additionalinfo.backend.ws.model.statistics.Statistics;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MockStatisticClient implements StatisticClient {
 
+    private static final Logger logger = LoggerFactory.getLogger(MockStatisticClient.class);
+
+    private final HistoryDataService historyDataService;
     private boolean mockImplausible = false;
     private Random rand = new Random();
+
+    public MockStatisticClient(HistoryDataService historyDataService) {
+        this.historyDataService = historyDataService;
+    }
 
     /**
      * returns an implausible total active users value on every second method call
@@ -40,6 +50,29 @@ public class MockStatisticClient implements StatisticClient {
         }
 
         StatisticHelper.calculateRollingAverage(statistics);
+
+        Integer latestSevenDayAverage = null;
+        Integer prevWeekSevenDayAverage = null;
+        for (int i = statistics.getHistory().size() - 1; i > 0; i--) {
+            latestSevenDayAverage =
+                    statistics.getHistory().get(i).getNewInfectionsSevenDayAverage();
+            if (latestSevenDayAverage != null) {
+                LocalDate day = statistics.getHistory().get(i).getDate();
+                historyDataService.upsertLatestSevenDayAvgForDay(latestSevenDayAverage, day);
+                prevWeekSevenDayAverage =
+                        historyDataService.findLatestSevenDayAvgForDay(day.minusDays(7));
+                if (prevWeekSevenDayAverage == null) {
+                    logger.warn(
+                            "no seven day avg history for {}. using current data as fallback", day);
+                    prevWeekSevenDayAverage =
+                            statistics.getHistory().get(i - 7).getNewInfectionsSevenDayAverage();
+                }
+                break;
+            }
+        }
+        statistics.setNewInfectionsSevenDayAvg(latestSevenDayAverage);
+        statistics.setNewInfectionsSevenDayAvgRelPrevWeek(
+                (latestSevenDayAverage / (double) prevWeekSevenDayAverage) - 1);
 
         mockImplausible = !mockImplausible;
         return statistics;
