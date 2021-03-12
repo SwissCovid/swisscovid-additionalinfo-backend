@@ -6,6 +6,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import org.springframework.transaction.annotation.Transactional;
 
 public class JdbcHistoryDataServiceImpl implements HistoryDataService {
     private final NamedParameterJdbcTemplate jt;
@@ -20,6 +21,7 @@ public class JdbcHistoryDataServiceImpl implements HistoryDataService {
     }
 
     @Override
+    @Transactional(readOnly = false)
     public void upsertLatestSevenDayAvgForDay(Integer latestSevenDayAvg, LocalDate day) {
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("latest_seven_day_avg", latestSevenDayAvg);
@@ -39,6 +41,7 @@ public class JdbcHistoryDataServiceImpl implements HistoryDataService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Integer findLatestSevenDayAvgForDay(LocalDate day) {
         try {
             return jt.queryForObject(
@@ -48,5 +51,11 @@ public class JdbcHistoryDataServiceImpl implements HistoryDataService {
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
+    }
+    
+    @Override
+    @Transactional(readOnly = false)
+    public void removeBefore(LocalDate day) {
+    	removeLatestSevenDayAvgForDay(day, true);
     }
 }

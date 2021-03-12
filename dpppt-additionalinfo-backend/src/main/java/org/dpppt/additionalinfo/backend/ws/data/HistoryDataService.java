@@ -28,4 +28,10 @@ public interface HistoryDataService {
      * @return
      */
     Integer findLatestSevenDayAvgForDay(LocalDate day);
+
+    /**
+     * remote all data before the given day
+     * @param day
+     */
+	void removeBefore(LocalDate day);
 }

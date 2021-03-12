@@ -20,6 +20,7 @@ import org.springframework.context.annotation.Profile;
 @Configuration
 @Profile("postgres-test")
 public class PostgresDataConfig extends WSDevConfig {
+	
     @Bean
     @Override
     public DataSource dataSource() {

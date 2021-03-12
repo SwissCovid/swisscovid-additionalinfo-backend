@@ -19,7 +19,7 @@
     <properties>
         <java-version>11</java-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <spring-boot-version>2.2.6.RELEASE</spring-boot-version>
+		<spring-boot-version>2.3.9.RELEASE</spring-boot-version>
         <itCoverageAgent></itCoverageAgent>
         <build-helper-maven-plugin.version>1.9.1</build-helper-maven-plugin.version>
     </properties>
@@ -115,31 +115,6 @@
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-web</artifactId>
-        </dependency>
-
-        <!-- security: jwt -->
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-api</artifactId>
-            <version>0.11.1</version>
-        </dependency>
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-root</artifactId>
-            <version>0.11.1</version>
-            <type>pom</type>
-        </dependency>
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-jackson</artifactId>
-            <version>0.11.1</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-impl</artifactId>
-            <version>0.11.1</version>
-            <scope>runtime</scope>
         </dependency>
 
         <!-- security: pem -->
