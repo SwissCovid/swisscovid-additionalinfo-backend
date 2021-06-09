@@ -1,8 +1,4 @@
-# SwissCovid CrowdNotifier Backend
-
-[![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://github.com/SwissCovid/swisscovid-cn-backend/blob/develop/LICENSE)
-![Build](https://github.com/SwissCovid/swisscovid-cn-backend/workflows/Build/badge.svg?branch=develop)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=SwissCovid_swisscovid-cn-backend&metric=alert_status)](https://sonarcloud.io/dashboard?id=SwissCovid_swisscovid-cn-backend)
+# SwissCovid Additional Info Backend
 
 SwissCovid is the official contact tracing app of Switzerland. The app can be installed from the [App Store](https://apps.apple.com/ch/app/swisscovid/id1509275381) or the [Google Play Store](https://play.google.com/store/apps/details?id=ch.admin.bag.dp3t). The SwissCovid 2.0 app uses two types of contact tracing to prevent the spread of COVID-19.
 
@@ -10,9 +6,9 @@ With proximity tracing close contacts are detected using the bluetooth technolog
 
 With presence tracing people that are at the same venue at the same time are detected. For this the [swisscovid-cn-backend](https://github.com/SwissCovid/swisscovid-cn-backend), [CrowdNotifier iOS SDK](https://github.com/CrowdNotifier/crowdnotifier-sdk-ios) and [CrowdNotifier Android SDK](https://github.com/CrowdNotifier/crowdnotifier-sdk-android) are used that provide a secure, decentralized, privacy-preserving presence tracing system. This feature is called SwissCovid Check-in.
 
-## Further Documentation
+## Description
 
-The full set of documents for CrowdNotifier is at https://github.com/CrowdNotifier/documents. Please refer to the technical documents and whitepapers for a description of the implementation.
+The [Swisscovid Additional Info Backend](https://github.com/SwissCovid/swisscovid-additionalinfo-backend) is used by the apps to fetch and refresh the statistical data displayed under the "Stats" tab.
 
 ## Repositories
 
