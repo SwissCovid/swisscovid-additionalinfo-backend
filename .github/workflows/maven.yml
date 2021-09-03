@@ -35,11 +35,6 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ github.token }}
         TESTCONTAINERS_RYUK_DISABLED: true
-    - name: Publish to GitHub Packages Apache Maven
-      if: github.ref == 'refs/heads/develop'
-      run: mvn deploy -Dmaven.test.skip=true --file dpppt-additionalinfo-backend/pom.xml -s $GITHUB_WORKSPACE/settings.xml
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
     - name: shasum
       run: shasum -a 256 dpppt-additionalinfo-backend/target/dpppt-additionalinfo-backend.jar > dpppt-additionalinfo-backend/target/dpppt-additionalinfo-backend.jar.sha256
       shell: bash
