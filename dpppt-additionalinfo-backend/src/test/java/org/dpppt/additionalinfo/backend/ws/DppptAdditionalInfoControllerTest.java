@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.boot.test.autoconfigure.actuate.metrics.AutoConfigureMetrics;
 
 @ActiveProfiles({"actuator-security"})
 @SpringBootTest(
@@ -37,6 +38,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
             "management.endpoints.enabled-by-default=true",
             "management.endpoints.web.exposure.include=*"
         })
+// to make sure prometheus is exposed in tests
+@AutoConfigureMetrics
 public class DppptAdditionalInfoControllerTest extends BaseControllerTest {
 
     @Autowired private Filter springSecurityFilterChain;

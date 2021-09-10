@@ -14,7 +14,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.ActiveProfiles;
 
-@ComponentScan(basePackages = {"org.dpppt.additionalinfo.backend.ws.config"})
+@ComponentScan(basePackages = {"org.dpppt.additionalinfo.backend.ws.config",
+    "ch.admin.bag.covidcertificate.log",
+    "ch.admin.bag.covidcertificate.rest"})
 @SpringBootApplication
 @ActiveProfiles("postgres")
-public class TestApplication {}
+public class TestApplication {
+
+}
